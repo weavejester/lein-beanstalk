@@ -10,7 +10,6 @@ To use lein-beanstalk, add it as a development dependency to your project.clj fi
     :dev-dependencies [[lein-beanstalk "0.1.0"]]
 
 
-
 ## License
 
 Copyright (C) 2011 James Reeves (weavejester)
