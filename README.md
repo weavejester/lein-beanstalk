@@ -9,6 +9,12 @@ To use lein-beanstalk, add it as a development dependency to your project.clj fi
 
     :dev-dependencies [[lein-beanstalk "0.1.0"]]
 
+Then define the service using your credentials
+
+    :aws {:access-key "1234567890ABCDEFGHIJ"
+          :secret-key "3kjebBVJEUEBJVKwjbf+2ibjwuvKJbebvdbdsvhd"}
+          :beanstalk {:environments [:production]}}
+
 
 ## License
 

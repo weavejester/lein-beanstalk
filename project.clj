@@ -9,4 +9,5 @@
                  [lein-ring "0.3.0"]]
 
   :dev-dependencies [[swank-clojure "1.2.1"]
-                     [jline "0.9.94"]])
+                     [jline "0.9.94"]
+                     [leiningen "1.4.2"]])
