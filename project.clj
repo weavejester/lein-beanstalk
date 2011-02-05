@@ -4,3 +4,4 @@
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [com.amazonaws/aws-java-sdk "1.1.3"]
                  [lein-ring "0.3.0"]])
+
