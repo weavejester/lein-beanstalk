@@ -6,7 +6,8 @@
 
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [com.amazonaws/aws-java-sdk "1.1.5"]
-                 [lein-ring "0.3.0"]]
+                 [lein-ring "0.3.2"]
+                 [clj-time "0.3.0-SNAPSHOT"]]
 
   :dev-dependencies [[swank-clojure "1.2.1"]
                      [jline "0.9.94"]
