@@ -121,14 +121,10 @@
      (doto (CreateEnvironmentRequest.)
        (.setApplicationName (:name project))
        (.setEnvironmentName environment)
-       (.setVersionLabel (:version project))
+       (.setVersionLabel (create-version project))
        (.setSolutionStackName solution-stack-name))))
 
-(defn- create-environment
-  [project environment]
-  (.createEnvironment (beanstalk-client project) (create-environment-request project environment)))
-
-(defn- create-update-environment-request
+(defn- update-environment-request
   [project environment]
   (doto (UpdateEnvironmentRequest.)
     (.setEnvironmentId (.getEnvironmentId environment))
@@ -147,7 +143,8 @@
                          (describe-environments project))]
     (first env)))
 
-(defn update-environment
+(defn deploy-environment
   [project environment-name]
-  (when-let [env (get-environment project environment-name)]
-    (.updateEnvironment (beanstalk-client project) (create-update-environment-request project env))))
+  (if-let [env (get-environment project environment-name)]
+    (.updateEnvironment (beanstalk-client project) (update-environment-request project env))
+    (.createEnvironment (beanstalk-client project) (create-environment-request project environment-name))))

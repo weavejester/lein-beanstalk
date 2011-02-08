@@ -21,7 +21,7 @@
          (uberwar project filename)
          (aws/upload-file-to-bucket project filename)
          (aws/create-application-version project filename)
-         (aws/update-environment project environment)))))
+         (aws/deploy-environment project environment)))))
 
 (defn info
   "Provides info for about project on Amazon Elastic Beanstalk."
