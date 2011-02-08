@@ -18,7 +18,7 @@
      (if-not (project-env-exists? project environment)
        (println (str "Environment '" environment "' not in project.clj"))
        (let [filename (versioned-filename project)]
-         ;; (uberwar project filename)
+         (uberwar project filename)
          (aws/upload-file-to-bucket project filename)
          (aws/create-application-version project filename)
          (aws/update-environment project environment)))))
