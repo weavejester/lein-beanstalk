@@ -1,9 +1,7 @@
 (ns leiningen.aws
 
   (:use [clojure.java.io :only (file)]
-        [clojure.string :only (lower-case)]
-        [clj-time.core :only (now)]
-        [clj-time.format :only (formatter unparse)])
+        [clojure.string :only (lower-case)])
 
   (:import com.amazonaws.auth.BasicAWSCredentials
            com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient
@@ -28,7 +26,7 @@
 ;;
 ;; Helper functions
 ;;
-(defonce current-datetime (unparse (formatter "yyyyMMddHHmmss") (now)))
+(defonce current-datetime (.format (java.text.SimpleDateFormat. "yyyyMMddHHmmss") (java.util.Date.)))
 
 (defn create-version
   "Creates version by appending date & time to project version."
