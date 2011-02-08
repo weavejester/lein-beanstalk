@@ -99,7 +99,7 @@
      (create-application-version-request project filename (default-bucket-name project)))
   ([project filename bucket-name]
      (doto (CreateApplicationVersionRequest.)
-       (.setAutoCreateApplication false)
+       (.setAutoCreateApplication true)
        (.setApplicationName (:name project))
        (.setVersionLabel (create-version project))
        (.setDescription (:description project))
