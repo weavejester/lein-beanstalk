@@ -26,7 +26,17 @@
 (defn info
   "Provides info for about project on Amazon Elastic Beanstalk."
   ([project]
-     (println "Usage: lein beanstalk info <environment>"))
+     (if-let [app (aws/get-application project)]
+       (do
+         (println (str "Application Name : " (.getApplicationName app)))
+         (println (str "Description      : " (.getDescription app)))
+         (println (str "Last 5 Versions  : " (join "\n                   " (take 5 (.getVersions app)))))
+         (println (str "Created On       : " (.getDateCreated app)))
+         (println (str "Updated On       : " (.getDateUpdated app)))
+         (println (str "Deployed Envs    : " (join "\n                   "
+                                                   (map #(str (.getEnvironmentName %) " (" (.getStatus %) ")")
+                                                        (aws/describe-environments project))))))
+       (println (str "Application '" (:name project) "' not found on AWS Elastic Beanstalk!"))))
   ([project environment-name]
      (if-not (project-env-exists? project environment-name)
        (println (str "Environment '" environment-name "' not in project.clj!"))

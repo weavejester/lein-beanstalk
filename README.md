@@ -25,7 +25,7 @@ environments:
 
     :aws {:access-key "XXXXXXXXXXXXXXXXXX"
           :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}
-          :beanstalk {:environments [myapp-dev]}}
+          :beanstalk {:environments [myapp-development myapp-staging myapp-production]}}
 
 You should now be able to deploy your application to the Amazon cloud
 using the following command:
@@ -34,18 +34,34 @@ using the following command:
 
 ### Info
 
-To get information about our environment  execute
+To get information about the application itself run
 
-    $ lein beanstalk info myapp-dev
+    $ lein beanstalk info
+    Application Name : myapp
+    Description      : My Awesome Compojure App
+    Last 5 Versions  : 0.1.0-20110209030504
+                       0.1.0-20110209030031
+                       0.1.0-20110209025533
+                       0.1.0-20110209021110
+                       0.1.0-20110209015216
+    Created On       : Wed Feb 09 03:00:45 EST 2011
+    Updated On       : Wed Feb 09 03:00:45 EST 2011
+    Deployed Envs    : myapp-development (Ready)
+                       myapp-staging (Ready)
+                       myapp-production (Terminated)
+
+and information about a particular environment execute
+
+    $ lein beanstalk info myapp-development
     Environment Id   : e-lm32mpkr6t
     Application Name : myapp
-    Environment Name : myapp-dev
+    Environment Name : myapp-development
     Description      : Default environment for the myapp application.
     URL              : myapp.elasticbeanstalk.com
     LoadBalancer URL : awseb-myapp-46156215.us-east-1.elb.amazonaws.com
     Status           : Ready
     Health           : Green
-    Current Version  : First Release
+    Current Version  : 0.1.0-20110209030504
     Solution Stack   : 32bit Amazon Linux running Tomcat 6
     Created On       : Tue Feb 08 08:01:44 EST 2011
     Updated On       : Tue Feb 08 08:05:01 EST 2011
