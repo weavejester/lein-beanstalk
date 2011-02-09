@@ -129,6 +129,7 @@
        (.setApplicationName (:name project))
        (.setEnvironmentName environment)
        (.setVersionLabel (create-version project))
+       (.setCNAMEPrefix environment)
        (.setSolutionStackName solution-stack-name))))
 
 (defn- update-environment-request
