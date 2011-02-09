@@ -113,6 +113,13 @@
   [project]
   (.getApplications (.describeApplications (beanstalk-client project))))
 
+(defn get-application
+  "Returns the application matching the passed in name"
+  [project]
+  (when-let [app (filter #(and (= (.getApplicationName %) (:name project))                               )
+                         (describe-applications project))]
+    (first app)))
+
 ;; Environment
 (defn- create-environment-request
   ([project environment]
@@ -133,15 +140,16 @@
 
 (defn describe-environments
   [project]
-  (.getEnvironments (.describeEnvironments (beanstalk-client project))))
+  (filter #(and (= (.getApplicationName %) (:name project)))
+          (.getEnvironments (.describeEnvironments (beanstalk-client project)))))
 
 (defn get-environment
   "Returns the environment matching the passed in name"
   [project environment-name]
-  (when-let [env (filter #(and (= (.getApplicationName %) (:name project))
-                               (= (.getEnvironmentName %) environment-name))
-                         (describe-environments project))]
-    (first env)))
+  (when-let [envs (filter #(and (= (.getApplicationName %) (:name project))
+                                (= (.getEnvironmentName %) environment-name))
+                          (describe-environments project))]
+    (first envs)))
 
 (defn deploy-environment
   [project environment-name]
