@@ -1,5 +1,5 @@
 (ns leiningen.beanstalk
-  (:require [leiningen.aws :as aws]
+  (:require [leiningen.beanstalk.aws :as aws]
             [clojure.string :as str])
   (:use [leiningen.help :only (help-for)]
         [leiningen.ring.war :only (war-file-path)]

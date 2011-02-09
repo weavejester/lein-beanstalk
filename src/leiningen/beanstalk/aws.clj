@@ -1,4 +1,5 @@
-(ns leiningen.aws
+(ns leiningen.beanstalk.aws
+  "AWS-specific libraries."
   (:require
     [clojure.java.io :as io]
     [clojure.string :as str])
