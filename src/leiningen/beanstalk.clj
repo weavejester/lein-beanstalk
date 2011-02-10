@@ -25,6 +25,15 @@
          (aws/create-app-version project filename)
          (aws/deploy-environment project environment)))))
 
+(defn terminate
+  "Terminte the environment for the current project on Amazon Elastic Beanstalk."
+  ([project]
+     (println "Usage: lein beanstalk terminate <environment>"))
+  ([project env-name]
+     (if-not (project-env-exists? project env-name)
+       (println (str "Environment '" env-name "' not in project.clj"))
+       (aws/terminate-environment project env-name))))
+
 (def app-info-indent "\n                  ")
 
 (defn- last-versions-info [app]
@@ -78,11 +87,12 @@
 
 (defn beanstalk
   "Manage Amazon's Elastic Beanstalk service."
-  {:help-arglists '([deploy info])
-   :subtasks [#'deploy #'info]}
+  {:help-arglists '([deploy info terminate])
+   :subtasks [#'deploy #'info #'terminate]}
   ([project]
      (println (help-for "beanstalk")))
   ([project subtask & args]
     (case subtask
-      "deploy" (apply deploy project args)
-      "info"   (apply info project args))))
+      "deploy"    (apply deploy project args)
+      "info"      (apply info project args)
+      "terminate" (apply terminate project args))))

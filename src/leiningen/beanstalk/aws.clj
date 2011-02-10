@@ -14,6 +14,7 @@
     com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest
     com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.S3Location
+    com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
     com.amazonaws.services.s3.AmazonS3Client))
 
 (defn credentials [project]
@@ -95,3 +96,12 @@
   (if-let [env (get-environment project env-name)]
     (update-environment project env)
     (create-environment project env-name)))
+
+(defn terminate-environment
+  [project env-name]
+  (if-let [env (get-environment project env-name)]
+    (.terminateEnvironment
+     (beanstalk-client project)
+     (doto (TerminateEnvironmentRequest.)
+       (.setEnvironmentId (.getEnvironmentId env))
+       (.setEnvironmentName (.getEnvironmentName env))))))
