@@ -2,8 +2,6 @@
 
 Leiningen plugin for Amazon's [Elastic Beanstalk][1]
 
-**Note: this plugin has yet to be released!**
-
 ## Prerequisites
 
 You will need an [Amazon Web Services][2] account, and know your
