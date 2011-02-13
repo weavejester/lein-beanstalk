@@ -39,11 +39,6 @@
       (.createBucket bucket)
       (.putObject bucket (.getName file) file))))
 
-(defn- environment
-  "Returns the enrionment map for the passed in environment name."
-  [project env-name]
-  (first (filter #(= (:name %) env-name) (-> project :aws :beanstalk :environments))))
-
 (defn- beanstalk-client [project]
   (AWSElasticBeanstalkClient. (credentials project)))
 
@@ -67,16 +62,15 @@
        (filter #(= (.getApplicationName %) (:name project)))
        first))
 
-(defn create-environment [project env-name]
-  (let [env (environment project env-name)]
-    (.createEnvironment
-     (beanstalk-client project)
-     (doto (CreateEnvironmentRequest.)
-       (.setApplicationName (:name project))
-       (.setEnvironmentName (:name env))
-       (.setVersionLabel (app-version project))
-       (.setCNAMEPrefix (:cname-prefix env))
-       (.setSolutionStackName "32bit Amazon Linux running Tomcat 6")))))
+(defn create-environment [project env]
+  (.createEnvironment
+    (beanstalk-client project)
+    (doto (CreateEnvironmentRequest.)
+      (.setApplicationName (:name project))
+      (.setEnvironmentName (:name env))
+      (.setVersionLabel (app-version project))
+      (.setCNAMEPrefix (:cname-prefix env))
+      (.setSolutionStackName "32bit Amazon Linux running Tomcat 6"))))
 
 (defn update-environment [project environment]
   (.updateEnvironment
@@ -99,10 +93,10 @@
        first))
 
 (defn deploy-environment
-  [project env-name]
-  (if-let [env (get-environment project env-name)]
+  [project options]
+  (if-let [env (get-environment project (:name options))]
     (update-environment project env)
-    (create-environment project env-name)))
+    (create-environment project options)))
 
 (defn terminate-environment
   [project env-name]
