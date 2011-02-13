@@ -5,9 +5,32 @@
         [leiningen.ring.war :only (war-file-path)]
         [leiningen.ring.uberwar :only (uberwar)]))
 
-(defn- project-env-exists? [project environment]
+(defn- project-env-exists? [project env-name]
   (let [envs (-> project :aws :beanstalk :environments)]
-    (contains? (set (map str envs)) environment)))
+    (some #(= (:name %) env-name) envs)))
+
+(defn default-environments
+  [project]
+  (let [project-name (:name project)]
+    [{:name "development" :cname-prefix (str project-name "-development")}
+     {:name "staging"     :cname-prefix (str project-name "-staging")}
+     {:name "production"  :cname-prefix project-name}]))
+
+(defn environments
+  [project]
+  (when-let [envs (not-empty (-> project :aws :beanstalk :environments))]
+    (for [env envs]
+      (if (map? env)
+        (merge {:cname-prefix (str (:name project) "-" (:name env))} env)
+        {:name env :cname-prefix (str (:name project) "-" env)}))))
+
+(defn update-project
+  "Returns project with filled in environments."
+  [project]
+  (assoc-in project
+            [:aws :beanstalk :environments]
+            (or (environments project)
+                (default-environments project))))
 
 (defn war-filename [project]
   (str (:name project) "-" (aws/app-version project) ".war"))
@@ -16,14 +39,14 @@
   "Deploy the current project to Amazon Elastic Beanstalk."
   ([project]
      (println "Usage: lein beanstalk deploy <environment>"))
-  ([project environment]
-     (if-not (project-env-exists? project environment)
-       (println (str "Environment '" environment "' not in project.clj"))
+  ([project env-name]
+     (if-not (project-env-exists? project env-name)
+       (println (str "Environment '" env-name "' not defined!"))
        (let [filename (war-filename project)]
          (uberwar project filename)
          (aws/s3-upload-file project filename)
          (aws/create-app-version project filename)
-         (aws/deploy-environment project environment)))))
+         (aws/deploy-environment project env-name)))))
 
 (defn terminate
   "Terminte the environment for the current project on Amazon Elastic Beanstalk."
@@ -82,7 +105,7 @@
      (app-info project))
   ([project env-name]
      (if-not (project-env-exists? project env-name)
-       (println (str "Environment '" env-name "' not in project.clj!"))
+       (println (str "Environment '" env-name "' not defined!"))
        (env-info project env-name))))
 
 (defn beanstalk
@@ -92,7 +115,8 @@
   ([project]
      (println (help-for "beanstalk")))
   ([project subtask & args]
-    (case subtask
-      "deploy"    (apply deploy project args)
-      "info"      (apply info project args)
-      "terminate" (apply terminate project args))))
+     (let [updated-project (update-project project)]
+       (case subtask
+             "deploy"    (apply deploy updated-project args)
+             "info"      (apply info updated-project args)
+             "terminate" (apply terminate updated-project args)))))

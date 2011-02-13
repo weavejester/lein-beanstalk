@@ -68,14 +68,88 @@ and information about a particular environment execute
     Created On       : Tue Feb 08 08:01:44 EST 2011
     Updated On       : Tue Feb 08 08:05:01 EST 2011
 
-### Shutting Down
+### Shutdown
 
 To shutdown an existing environment use the following command
 
     $ lein beanstalk terminate development
 
-This terminate the environment and all of its resources, i.e.
+This terminates the environment and all of its resources, i.e.
 the Auto Scaling group, LoadBalancer, etc.
+
+
+##  Configuration
+
+### AWS Credentials
+
+The [Amazon Web Services][2] account key and secret key are
+in the `project.clj` file itself
+
+    :aws {:access-key "XXXXXXXXXXXXXXXXXX"
+          :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}
+          ... }
+
+
+### Environments
+
+Elastic Beanstalk environments can be define multipe ways in
+the `project.clj` file.
+
+If no environments are specified, lein-beanstalk will create three
+default environments
+
+* `development` (with CNAME prefix `myapp-development`)
+* `staging` (with CNAME prefix `myapp-staging`)
+* `production` (with CNAME prefix `myapp`)
+
+To override the default behavior, either have `:environments`
+point to vector of envionment symbols
+
+    :aws {:beanstalk {:environments [dev demo prod]
+                      ...}
+          ...}
+
+or to a vector of maps
+
+    :aws {:beanstalk {:environments [{:name "dev"}
+                                     {:name "demo"}
+                                     {:name "prod"}]
+                      ...}
+          ...}
+
+In either of the two case the following two environents will be created
+
+* `dev` (with CNAME prefix `myapp-dev`)
+* `demo` (with CNAME prefix `myapp-demo`)
+* `prod` (with CNAME prefix `myapp-prod`)
+
+The second option allows to specify the CNAME prefix for that
+environment
+
+    :aws {:beanstalk {:environments [{:name "dev"
+                                      :canme-prefix "myapp-development"}
+                                     {:name "staging"
+                                      :cname-prefix "myapp-demo"}
+                                     {:name "prod"
+                                      :canme-prefix "myapp"}]
+                      ...}
+          ...}
+
+By default the CNAME prefix is `<project-name>-<environment>`.
+
+
+### S3 Buckets
+
+[Amazon Elastic Beanstalk][1] uses
+[Amazon Simple Storage Service (S3)][3] to store the versions
+of the application. By default lein-beanstalk uses
+`lein-beanstalk.<project-name>` as the S3 bucket name.
+
+To use a custom bucket, specify it in the `project.clj` file:
+
+    :aws {:beanstalk {:s3-bucket "my-private-bucket"
+                      ...}}
+          ...}
 
 
 ## Trouble-Shooting
@@ -91,3 +165,4 @@ application. e.g. for Compojure add
 
 [1]: http://aws.amazon.com/elasticbeanstalk
 [2]: http://aws.amazon.com
+[3]: http://aws.amazon.com/s3
