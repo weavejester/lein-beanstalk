@@ -12,7 +12,7 @@
 (defn default-environments
   [project]
   (let [project-name (:name project)]
-    [{:name "development" :cname-prefix (str project-name "-development")}
+    [{:name "development" :cname-prefix (str project-name "-dev")}
      {:name "staging"     :cname-prefix (str project-name "-staging")}
      {:name "production"  :cname-prefix project-name}]))
 
