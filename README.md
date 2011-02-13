@@ -96,7 +96,7 @@ the `project.clj` file.
 If no environments are specified, lein-beanstalk will create three
 default environments
 
-* `development` (with CNAME prefix `myapp-development`)
+* `development` (with CNAME prefix `myapp-dev`)
 * `staging` (with CNAME prefix `myapp-staging`)
 * `production` (with CNAME prefix `myapp`)
 

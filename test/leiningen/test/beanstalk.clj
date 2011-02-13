@@ -43,10 +43,10 @@
 (deftest test-update-project-with-default-environments
   (are [project name cname-prefix]
        (.contains (get-in (update-project project) [:aws :beanstalk :environments]) {:name name :cname-prefix cname-prefix})
-       no-envs-project "development" "noenvsproject-development"
+       no-envs-project "development" "noenvsproject-dev"
        no-envs-project "staging"     "noenvsproject-staging"
        no-envs-project "production"  "noenvsproject"
-       empty-envs-project "development" "emptyenvsproject-development"
+       empty-envs-project "development" "emptyenvsproject-dev"
        empty-envs-project "staging"     "emptyenvsproject-staging"
        empty-envs-project "production"  "emptyenvsproject"))
 
