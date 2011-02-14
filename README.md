@@ -75,6 +75,12 @@ To shutdown an existing environment use the following command
 This terminates the environment and all of its resources, i.e.
 the Auto Scaling group, LoadBalancer, etc.
 
+### Cleanup
+
+To remove any unused versions from the S3 bucket run
+
+    $ lein beanstalk clean
+
 
 ##  Configuration
 
