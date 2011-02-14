@@ -11,6 +11,7 @@
     com.amazonaws.services.elasticbeanstalk.model.CreateApplicationVersionRequest
     com.amazonaws.services.elasticbeanstalk.model.CreateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationRequest
+    com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationVersionRequest
     com.amazonaws.services.elasticbeanstalk.model.DescribeEnvironmentsRequest
     com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.S3Location
@@ -52,6 +53,15 @@
       (.setVersionLabel (app-version project))
       (.setDescription (:description project))
       (.setSourceBundle (S3Location. (s3-bucket-name project) filename)))))
+
+(defn delete-app-version
+  [project version]
+  (.deleteApplicationVersion
+    (beanstalk-client project)
+    (doto (DeleteApplicationVersionRequest.)
+      (.setApplicationName (:name project))
+      (.setVersionLabel version)
+      (.setDeleteSourceBundle true))))
 
 (defn get-application
   "Returns the application matching the passed in name"

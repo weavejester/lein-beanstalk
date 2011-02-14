@@ -1,6 +1,7 @@
 (ns leiningen.beanstalk
   (:require [leiningen.beanstalk.aws :as aws]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.set :as set])
   (:use [leiningen.help :only (help-for)]
         [leiningen.ring.war :only (war-file-path)]
         [leiningen.ring.uberwar :only (uberwar)]))
@@ -101,14 +102,25 @@
        (println (str "Environment '" env-name "' not defined!"))
        (env-info project env-name))))
 
+(defn clean
+  "Cleans out old versions, except the ones currently deployed."
+  [project]
+  (let [all-versions      (into #{} (.getVersions (aws/get-application project)))
+        deployed-versions (into #{} (map #(.getVersionLabel %) (aws/app-environments project)))]
+    (doseq [version (set/difference all-versions deployed-versions)]
+      (print (str "Removing '" version "'"))
+      (aws/delete-app-version project version)
+      (print (str " -> done!\n")))))
+
 (defn beanstalk
   "Manage Amazon's Elastic Beanstalk service."
-  {:help-arglists '([deploy info terminate])
-   :subtasks [#'deploy #'info #'terminate]}
+  {:help-arglists '([clean deploy info terminate])
+   :subtasks [#'clean #'deploy #'info #'terminate]}
   ([project]
      (println (help-for "beanstalk")))
   ([project subtask & args]
      (case subtask
+       "clean"     (apply clean project args)
        "deploy"    (apply deploy project args)
        "info"      (apply info project args)
        "terminate" (apply terminate project args))))
