@@ -16,7 +16,7 @@ your `project.clj` file.
 
 First, add lein-beanstalk as a development dependency:
 
-    :dev-dependencies [[lein-beanstalk "0.1.1"]]
+    :dev-dependencies [[lein-beanstalk "0.1.2"]]
 
 Then add an `:aws` key with your AWS keys and Elastic beanstalk
 environments:
