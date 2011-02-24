@@ -119,6 +119,7 @@
   ([project]
      (println (help-for "beanstalk")))
   ([project subtask & args]
+     (aws/quiet-logger)
      (case subtask
        "clean"     (apply clean project args)
        "deploy"    (apply deploy project args)

@@ -6,6 +6,7 @@
   (:import
     java.text.SimpleDateFormat
     java.util.Date
+    [java.util.logging Logger Level]
     com.amazonaws.auth.BasicAWSCredentials
     com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient
     com.amazonaws.services.elasticbeanstalk.model.CreateApplicationVersionRequest
@@ -17,6 +18,12 @@
     com.amazonaws.services.elasticbeanstalk.model.S3Location
     com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
     com.amazonaws.services.s3.AmazonS3Client))
+
+(defn quiet-logger
+  "Stop the extremely verbose AWS logger from logging so many messages."
+  []
+  (. (Logger/getLogger "com.amazonaws")
+     (setLevel Level/WARNING)))
 
 (defn credentials [project]
   (BasicAWSCredentials.
