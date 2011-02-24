@@ -90,7 +90,8 @@
       (.setVersionLabel (app-version project))
       (.setCNAMEPrefix (:cname-prefix env))
       (.setSolutionStackName "32bit Amazon Linux running Tomcat 6")))
-  (println (str "Created '" env "' environment")))
+  (println (str "Creating '" (:name env) "' environment")
+           "(this may take several minutes)"))
 
 (defn update-environment [project env]
   (.updateEnvironment
@@ -99,7 +100,8 @@
       (.setEnvironmentId (.getEnvironmentId env))
       (.setEnvironmentName (.getEnvironmentName env))
       (.setVersionLabel (app-version project))))
-  (println (str "Updated '" (.getEnvironmentName env) "' environment")))
+  (println (str "Updating '" (.getEnvironmentName env) "' environment")
+           "(this may take several minutes)"))
 
 (defn app-environments [project]
   (->> (beanstalk-client project)
@@ -113,15 +115,26 @@
                      (= (.getStatus %) "Ready")))
        first))
 
+(defn get-env-when-ready [project env-name]
+  (loop []
+    (Thread/sleep 2000)
+    (print ".")
+    (.flush *out*)
+    (or (get-environment project env-name)
+        (recur))))
+
 (defn deploy-environment
   [project options]
   (if-let [env (get-environment project (:name options))]
     (update-environment project env)
-    (create-environment project options)))
+    (create-environment project options))
+  (let [env (get-env-when-ready project (:name options))]
+    (println " Done")
+    (println "Environment deployed at:" (.getCNAME env))))
 
 (defn terminate-environment
   [project env-name]
-  (if-let [env (get-environment project env-name)]
+  (when-let [env (get-environment project env-name)]
     (.terminateEnvironment
      (beanstalk-client project)
      (doto (TerminateEnvironmentRequest.)
