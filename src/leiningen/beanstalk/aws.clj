@@ -45,7 +45,8 @@
         file   (io/file filepath)]
     (doto (AmazonS3Client. (credentials project))
       (.createBucket bucket)
-      (.putObject bucket (.getName file) file))))
+      (.putObject bucket (.getName file) file))
+    (println "Uploaded" (.getName file) "to S3 Bucket")))
 
 (defn- beanstalk-client [project]
   (AWSElasticBeanstalkClient. (credentials project)))
@@ -59,7 +60,8 @@
       (.setApplicationName (:name project))
       (.setVersionLabel (app-version project))
       (.setDescription (:description project))
-      (.setSourceBundle (S3Location. (s3-bucket-name project) filename)))))
+      (.setSourceBundle (S3Location. (s3-bucket-name project) filename))))
+  (println "Created new app version" (app-version project)))
 
 (defn delete-app-version
   [project version]
@@ -87,15 +89,17 @@
       (.setEnvironmentName (:name env))
       (.setVersionLabel (app-version project))
       (.setCNAMEPrefix (:cname-prefix env))
-      (.setSolutionStackName "32bit Amazon Linux running Tomcat 6"))))
+      (.setSolutionStackName "32bit Amazon Linux running Tomcat 6")))
+  (println (str "Created '" env "' environment")))
 
-(defn update-environment [project environment]
+(defn update-environment [project env]
   (.updateEnvironment
     (beanstalk-client project)
     (doto (UpdateEnvironmentRequest.)
-      (.setEnvironmentId (.getEnvironmentId environment))
-      (.setEnvironmentName (.getEnvironmentName environment))
-      (.setVersionLabel (app-version project)))))
+      (.setEnvironmentId (.getEnvironmentId env))
+      (.setEnvironmentName (.getEnvironmentName env))
+      (.setVersionLabel (app-version project))))
+  (println (str "Updated '" (.getEnvironmentName env) "' environment")))
 
 (defn app-environments [project]
   (->> (beanstalk-client project)
@@ -122,4 +126,5 @@
      (beanstalk-client project)
      (doto (TerminateEnvironmentRequest.)
        (.setEnvironmentId (.getEnvironmentId env))
-       (.setEnvironmentName (.getEnvironmentName env))))))
+       (.setEnvironmentName (.getEnvironmentName env))))
+    (println (str "Terminated '" env-name "' environment"))))
