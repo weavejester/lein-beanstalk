@@ -16,14 +16,13 @@ your `project.clj` file.
 
 First, add lein-beanstalk as a development dependency:
 
-    :dev-dependencies [[lein-beanstalk "0.1.2"]]
+    :dev-dependencies [[lein-beanstalk "0.2.0"]]
 
 Then add an `:aws` key with your AWS keys and Elastic beanstalk
 environments:
 
     :aws {:access-key "XXXXXXXXXXXXXXXXXX"
           :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}
-          :beanstalk {:environments [development staging production]}}
 
 ### Deploy
 
@@ -91,7 +90,6 @@ in the `project.clj` file itself
 
     :aws {:access-key "XXXXXXXXXXXXXXXXXX"
           :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}
-          ... }
 
 
 ### Environments
@@ -153,7 +151,6 @@ To use a custom bucket, specify it in the `project.clj` file:
 
     :aws {:beanstalk {:s3-bucket "my-private-bucket"
                       ...}}
-          ...}
 
 
 ## Trouble-Shooting
