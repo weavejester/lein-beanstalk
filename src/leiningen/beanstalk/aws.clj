@@ -72,14 +72,16 @@
       (.setVersionLabel version)
       (.setDeleteSourceBundle true))))
 
+(defn find-one [pred coll]
+  (first (filter pred coll)))
+
 (defn get-application
   "Returns the application matching the passed in name"
   [project]
   (->> (beanstalk-client project)
        .describeApplications
        .getApplications
-       (filter #(= (.getApplicationName %) (:name project)))
-       first))
+       (find-one #(= (.getApplicationName %) (:name project)))))
 
 (defn create-environment [project env]
   (.createEnvironment
@@ -109,35 +111,51 @@
       .getEnvironments
       (filter #(= (.getApplicationName %) (:name project)))))
 
-(defn get-environment [project environment]
-  (->> (app-environments project)
-       (filter #(and (= (.getEnvironmentName %) environment)
-                     (= (.getStatus %) "Ready")))
-       first))
+(defn ready? [environment]
+  (= (.getStatus environment) "Ready"))
 
-(defn get-env-when-ready [project env-name]
-  (loop []
-    (Thread/sleep 2000)
-    (print ".")
-    (.flush *out*)
-    (or (get-environment project env-name)
-        (recur))))
+(defn terminated? [environment]
+  (= (.getStatus environment) "Terminated"))
+
+(defn get-env [project env-name]
+  (->> (app-environments project)
+       (find-one #(= (.getEnvironmentName %) env-name))))
+
+(defn get-running-env [project env-name]
+  (->> (app-environments project)
+       (remove terminated?)
+       (find-one #(= (.getEnvironmentName %) env-name))))
+
+(defn poll-until
+  "Poll a function until its value matches a predicate."
+  ([pred poll]
+     (poll-until pred poll 3000))
+  ([pred poll & [delay]]
+     (loop []
+       (Thread/sleep delay)
+       (print ".")
+       (.flush *out*)
+       (let [value (poll)]
+         (if (pred value) value (recur))))))
 
 (defn deploy-environment
   [project options]
-  (if-let [env (get-environment project (:name options))]
+  (if-let [env (get-running-env project (:name options))]
     (update-environment project env)
     (create-environment project options))
-  (let [env (get-env-when-ready project (:name options))]
+  (let [env (poll-until ready? #(get-env project (:name options)))]
     (println " Done")
     (println "Environment deployed at:" (.getCNAME env))))
 
 (defn terminate-environment
   [project env-name]
-  (when-let [env (get-environment project env-name)]
+  (when-let [env (get-running-env project env-name)]
     (.terminateEnvironment
      (beanstalk-client project)
      (doto (TerminateEnvironmentRequest.)
        (.setEnvironmentId (.getEnvironmentId env))
        (.setEnvironmentName (.getEnvironmentName env))))
-    (println (str "Terminated '" env-name "' environment"))))
+    (println (str "Terminating '" env-name "' environment")
+             "(This may take several minutes)")
+    (poll-until terminated? #(get-env project env-name))
+    (println " Done")))

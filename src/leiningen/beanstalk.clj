@@ -77,7 +77,7 @@
 (defn env-info
   "Displays information about a Beanstalk environment."
   [project env-name]
-  (if-let [env (aws/get-environment project env-name)]    
+  (if-let [env (aws/get-env project env-name)]
     (println (str "Environment ID:    " (.getEnvironmentId env) "\n"
                   "Application Name:  " (.getApplicationName env) "\n"
                   "Environment Name:  " (.getEnvironmentName env) "\n"
@@ -105,8 +105,9 @@
 (defn clean
   "Cleans out old versions, except the ones currently deployed."
   [project]
-  (let [all-versions      (into #{} (.getVersions (aws/get-application project)))
-        deployed-versions (into #{} (map #(.getVersionLabel %) (aws/app-environments project)))]
+  (let [all-versions      (set (.getVersions (aws/get-application project)))
+        deployed-versions (set (map #(.getVersionLabel %)
+                                    (aws/app-environments project)))]
     (doseq [version (set/difference all-versions deployed-versions)]
       (print (str "Removing '" version "'"))
       (aws/delete-app-version project version)
