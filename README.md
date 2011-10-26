@@ -18,11 +18,12 @@ First, add lein-beanstalk as a development dependency:
 
     :dev-dependencies [[lein-beanstalk "0.2.0"]]
 
-Then add an `:aws` key with your AWS keys and Elastic beanstalk
-environments:
+Then add a `lein-beanstalk-credentials` definition to your
+`~/.lein/init.clj` file that contains your AWS credentials:
 
-    :aws {:access-key "XXXXXXXXXXXXXXXXXX"
-          :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}
+    (def lein-beanstalk-credentials
+      {:access-key "XXXXXXXXXXXXXXXXXX"
+       :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
 
 ### Deploy
 
@@ -85,16 +86,21 @@ To remove any unused versions from the S3 bucket run
 
 ### AWS Credentials
 
-The [Amazon Web Services][2] account key and secret key are
-in the `project.clj` file itself
+The [Amazon Web Services][2] account key and secret key should be
+put into a `lein-beanstalk-credentials` definition in your
+`~/.lein/init.clj` file:
 
-    :aws {:access-key "XXXXXXXXXXXXXXXXXX"
-          :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}
+    (def lein-beanstalk-credentials
+      {:access-key "XXXXXXXXXXXXXXXXXX"
+       :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
 
+Keeping your credentials out of your `project.clj` file and out
+of your project in general helps ensure you don't accidentally
+commit your credentials to github et al.
 
 ### Environments
 
-Elastic Beanstalk environments can be define multipe ways in
+Elastic Beanstalk environments can be defined in multiple ways in
 the `project.clj` file.
 
 If no environments are specified, lein-beanstalk will create three
@@ -104,8 +110,9 @@ default environments
 * `staging` (with CNAME prefix `myapp-staging`)
 * `production` (with CNAME prefix `myapp`)
 
-To override the default behavior, either have `:environments`
-point to vector of envionment symbols
+To override the default behavior, add an `:aws` key to your
+`project.clj` file, either with `:environments` mapped to a
+vector of envionment symbols:
 
     :aws {:beanstalk {:environments [dev demo prod]
                       ...}
@@ -119,13 +126,14 @@ or to a vector of maps
                       ...}
           ...}
 
-In either of the two case the following two environents will be created
+Given either of the above configurations, the following two
+environents will be created:
 
 * `dev` (with CNAME prefix `myapp-dev`)
 * `demo` (with CNAME prefix `myapp-demo`)
 * `prod` (with CNAME prefix `myapp-prod`)
 
-The second option allows to specify the CNAME prefix for that
+The second option allows one to specify the CNAME prefix for each
 environment
 
     :aws {:beanstalk {:environments [{:name "dev"

@@ -25,10 +25,21 @@
   (. (Logger/getLogger "com.amazonaws")
      (setLevel Level/WARNING)))
 
+(def ^{:private true} credentials-example
+  "(def lein-beanstalk-credentials {:aws {:access-key \"XXX\" :secret-key \"YYY\"}})")
+
+(defn- find-credentials
+  [project]
+  (let [init-map (resolve 'user/lein-beanstalk-credentials)
+        creds (and init-map @init-map)]
+    (when-not creds (println "WARNING: No AWS credentials found in ~/.lein/init.clj, falling back to project.clj."))
+    ((juxt :access-key :secret-key) (or creds (:aws project)))))
+
 (defn credentials [project]
-  (BasicAWSCredentials.
-    (get-in project [:aws :access-key])
-    (get-in project [:aws :secret-key])))
+  (let [[username pass] (find-credentials project)]
+    (if username
+      (BasicAWSCredentials. username pass)
+      (throw (IllegalStateException. (str "No credentials found; please add to ~/.lein/init.clj: " credentials-example))))))
 
 (defonce current-timestamp
   (.format (SimpleDateFormat. "yyyyMMddHHmmss") (Date.)))
