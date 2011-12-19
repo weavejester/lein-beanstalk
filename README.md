@@ -16,7 +16,7 @@ your `project.clj` file.
 
 First, add lein-beanstalk as a development dependency:
 
-    :dev-dependencies [[lein-beanstalk "0.2.0"]]
+    :dev-dependencies [[lein-beanstalk "0.2.1"]]
 
 Then add a `lein-beanstalk-credentials` definition to your
 `~/.lein/init.clj` file that contains your AWS credentials:
