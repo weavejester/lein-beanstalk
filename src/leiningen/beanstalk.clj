@@ -125,4 +125,5 @@
        "clean"     (apply clean project args)
        "deploy"    (apply deploy project args)
        "info"      (apply info project args)
-       "terminate" (apply terminate project args))))
+       "terminate" (apply terminate project args)
+       (println (help-for "beanstalk")))))
