@@ -29,6 +29,18 @@ Then add a `lein-beanstalk-credentials` definition to your
     (def lein-beanstalk-credentials
       {:access-key "XXXXXXXXXXXXXXXXXX"
        :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
+       
+Finally, lein-beanstalk uses lein-ring for packaging your
+application, so all of lein-ring's configuration applies as well.
+At a minimum, you'll need to your `project.clj` a reference to
+your application's top-level handler, e.g.:
+
+```clojure
+:ring {:handler hello-world.core/handler}
+```
+
+See the documentation for [lein-ring](https://github.com/weavejester/lein-ring)
+for more about the options it provides.
 
 ### Deploy
 
