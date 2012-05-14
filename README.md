@@ -154,7 +154,7 @@ The second option allows one to specify the CNAME prefix for each
 environment
 
     :aws {:beanstalk {:environments [{:name "dev"
-                                      :canme-prefix "myapp-development"}
+                                      :cname-prefix "myapp-development"}
                                      {:name "staging"
                                       :cname-prefix "myapp-demo"}
                                      {:name "prod"
