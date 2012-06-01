@@ -26,7 +26,7 @@
      (setLevel Level/WARNING)))
 
 (def ^{:private true} credentials-example
-  "(def lein-beanstalk-credentials {:aws {:access-key \"XXX\" :secret-key \"YYY\"}})")
+  "(def lein-beanstalk-credentials {:access-key \"XXX\" :secret-key \"YYY\"})")
 
 (defn- find-credentials
   [project]
