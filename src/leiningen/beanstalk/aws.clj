@@ -102,7 +102,8 @@
       (.setEnvironmentName (:name env))
       (.setVersionLabel (app-version project))
       (.setCNAMEPrefix (:cname-prefix env))
-      (.setSolutionStackName "32bit Amazon Linux running Tomcat 6")))
+      (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
+                                 "32bit Amazon Linux running Tomcat 6"))))
   (println (str "Creating '" (:name env) "' environment")
            "(this may take several minutes)"))
 
