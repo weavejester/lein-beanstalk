@@ -28,15 +28,23 @@
 (def ^{:private true} credentials-example
   "(def lein-beanstalk-credentials {:aws {:access-key \"XXX\" :secret-key \"YYY\"}})")
 
-(defn- find-credentials
-  [project]
+(defn- creds [project]
   (let [init-map (resolve 'user/lein-beanstalk-credentials)
         creds (and init-map @init-map)]
     (when-not creds (println "WARNING: No AWS credentials found in ~/.lein/init.clj, falling back to project.clj."))
-    ((juxt :access-key :secret-key) (or creds (:aws project)))))
+    (or creds (:aws project))))
+
+(defn- find-credentials
+  [project]
+  ((juxt :access-key :secret-key) (creds project)))
+
+(defn endpoint [project]
+  (let [region (or (:region (creds project)) "us-east-1")]
+    (str "elasticbeanstalk." region ".amazonaws.com")))
 
 (defn credentials [project]
-  (let [[username pass] (find-credentials project)]
+  (let [[username pass] (find-credentials project)
+        endpoint (endpoint project)]
     (if username
       (BasicAWSCredentials. username pass)
       (throw (IllegalStateException. (str "No credentials found; please add to ~/.lein/init.clj: " credentials-example))))))
@@ -60,7 +68,8 @@
     (println "Uploaded" (.getName file) "to S3 Bucket")))
 
 (defn- beanstalk-client [project]
-  (AWSElasticBeanstalkClient. (credentials project)))
+  (doto (AWSElasticBeanstalkClient. (credentials project))
+    (.setEndpoint (endpoint project))))
 
 (defn create-app-version
   [project filename]
