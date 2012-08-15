@@ -29,6 +29,9 @@ Then add a `lein-beanstalk-credentials` definition to your
     (def lein-beanstalk-credentials
       {:access-key "XXXXXXXXXXXXXXXXXX"
        :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
+
+You can supply an optional `:region` parameter to target endpoints
+other than us-east-1.
        
 Finally, lein-beanstalk uses lein-ring for packaging your
 application, so all of lein-ring's configuration applies as well.
