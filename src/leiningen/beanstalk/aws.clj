@@ -32,7 +32,6 @@
   [project]
   (let [init-map (resolve 'user/lein-beanstalk-credentials)
         creds (and init-map @init-map)]
-    (when-not creds (println "WARNING: No AWS credentials found in ~/.lein/init.clj, falling back to project.clj."))
     ((juxt :access-key :secret-key) (or creds (:aws project)))))
 
 (defn credentials [project]
