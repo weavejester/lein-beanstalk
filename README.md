@@ -182,6 +182,21 @@ environment
 
 By default the CNAME prefix is `<project-name>-<environment>`.
 
+### Environment Variables
+
+You can specify environment variables that will be added to the system
+properties of the running application, per beanstalk environment:
+
+    :aws
+    {:beanstalk
+     {:environments
+      [{:name "dev"
+        :cname-prefix "myapp-dev"
+        :env {"DATABASE_URL" "mysql://..."}}]}}
+
+If the environment variable name is a keyword, it is upper-cased and
+underscores ("_") are substituted for dashes ("-"). e.g.
+`:database-url` becomes `"DATABASE_URL"`.
 
 ### S3 Buckets
 
