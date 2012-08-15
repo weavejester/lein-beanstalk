@@ -123,7 +123,7 @@
       (.setOptionSettings (env-var-options project env))
       (.setCNAMEPrefix (:cname-prefix env))
       (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
-                                 "32bit Amazon Linux running Tomcat 6")))))
+                                 "32bit Amazon Linux running Tomcat 7")))))
 
 (defn update-environment-settings [project env options]
   (.updateEnvironment
