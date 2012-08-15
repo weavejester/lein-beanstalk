@@ -115,6 +115,17 @@ Keeping your credentials out of your `project.clj` file and out
 of your project in general helps ensure you don't accidentally
 commit your credentials to github et al.
 
+However, If you want to deploy your application using beanstalk from
+an environment like Jenkins, where you don't have control over the
+user, you can export the credential to the environment from the build
+script, and inside your `project.clj`, do:
+
+    (defproject my-project "0.1.0"
+        :description ...
+        :aws {
+            :access-key ~(System/getenv "AWS_ACCESS_KEY")
+            :secret-key ~(System/getenv "AWS_SECRET_KEY")})
+
 ### Environments
 
 Elastic Beanstalk environments can be defined in multiple ways in
@@ -154,7 +165,7 @@ The second option allows one to specify the CNAME prefix for each
 environment
 
     :aws {:beanstalk {:environments [{:name "dev"
-                                      :canme-prefix "myapp-development"}
+                                      :cname-prefix "myapp-development"}
                                      {:name "staging"
                                       :cname-prefix "myapp-demo"}
                                      {:name "prod"
