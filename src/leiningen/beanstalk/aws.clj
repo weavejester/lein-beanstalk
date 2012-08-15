@@ -9,6 +9,7 @@
     [java.util.logging Logger Level]
     com.amazonaws.auth.BasicAWSCredentials
     com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient
+    com.amazonaws.services.elasticbeanstalk.model.ConfigurationOptionSetting
     com.amazonaws.services.elasticbeanstalk.model.CreateApplicationVersionRequest
     com.amazonaws.services.elasticbeanstalk.model.CreateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.DeleteApplicationRequest
@@ -93,28 +94,52 @@
        .getApplications
        (find-one #(= (.getApplicationName %) (:name project)))))
 
+(defn default-env-vars
+  "A map of default environment variables."
+  [project]
+  (let [[access-key secret-key] (find-credentials project)]
+    {"AWS_ACCESS_KEY_ID" access-key
+     "AWS_SECRET_KEY" secret-key}))
+
+(defn env-var-options [project env]
+  (for [[key value] (merge (default-env-vars project)
+                           (:env env))]
+    (ConfigurationOptionSetting.
+     "aws:elasticbeanstalk:application:environment"
+     (if (keyword? key)
+       (-> key name str/upper-case (str/replace "-" "_"))
+       key)
+     value)))
+
 (defn create-environment [project env]
+  (println (str "Creating '" (:name env) "' environment")
+           "(this may take several minutes)")
   (.createEnvironment
     (beanstalk-client project)
     (doto (CreateEnvironmentRequest.)
       (.setApplicationName (:name project))
       (.setEnvironmentName (:name env))
-      (.setVersionLabel (app-version project))
+      (.setVersionLabel   (app-version project))
+      (.setOptionSettings (env-var-options project env))
       (.setCNAMEPrefix (:cname-prefix env))
       (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
-                                 "32bit Amazon Linux running Tomcat 6"))))
-  (println (str "Creating '" (:name env) "' environment")
-           "(this may take several minutes)"))
+                                 "32bit Amazon Linux running Tomcat 6")))))
 
-(defn update-environment [project env]
+(defn update-environment-settings [project env]
   (.updateEnvironment
     (beanstalk-client project)
     (doto (UpdateEnvironmentRequest.)
-      (.setEnvironmentId (.getEnvironmentId env))
+      (.setEnvironmentId   (.getEnvironmentId env))
       (.setEnvironmentName (.getEnvironmentName env))
-      (.setVersionLabel (app-version project))))
-  (println (str "Updating '" (.getEnvironmentName env) "' environment")
-           "(this may take several minutes)"))
+      (.setOptionSettings (env-var-options project env)))))
+
+(defn update-environment-version [project env]
+  (.updateEnvironment
+    (beanstalk-client project)
+    (doto (UpdateEnvironmentRequest.)
+      (.setEnvironmentId   (.getEnvironmentId env))
+      (.setEnvironmentName (.getEnvironmentName env))
+      (.setVersionLabel   (app-version project)))))
 
 (defn app-environments [project]
   (->> (beanstalk-client project)
@@ -149,12 +174,19 @@
        (let [value (poll)]
          (if (pred value) value (recur))))))
 
+(defn update-environment [project env]
+  (println (str "Updating '" (.getEnvironmentName env) "' environment")
+           "(this may take several minutes)")
+  (update-environment-settings project env)
+  (poll-until ready? #(get-env project (.getEnvironmentName env)))
+  (update-environment-version project env))
+
 (defn deploy-environment
-  [project options]
-  (if-let [env (get-running-env project (:name options))]
+  [project {name :name :as options}]
+  (if-let [env (get-running-env project name)]
     (update-environment project env)
     (create-environment project options))
-  (let [env (poll-until ready? #(get-env project (:name options)))]
+  (let [env (poll-until ready? #(get-env project name))]
     (println " Done")
     (println "Environment deployed at:" (.getCNAME env))))
 
