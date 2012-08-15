@@ -101,9 +101,9 @@
     {"AWS_ACCESS_KEY_ID" access-key
      "AWS_SECRET_KEY" secret-key}))
 
-(defn env-var-options [project env]
+(defn env-var-options [project options]
   (for [[key value] (merge (default-env-vars project)
-                           (:env env))]
+                           (:env options))]
     (ConfigurationOptionSetting.
      "aws:elasticbeanstalk:application:environment"
      (if (keyword? key)
@@ -125,13 +125,13 @@
       (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
                                  "32bit Amazon Linux running Tomcat 6")))))
 
-(defn update-environment-settings [project env]
+(defn update-environment-settings [project env options]
   (.updateEnvironment
     (beanstalk-client project)
     (doto (UpdateEnvironmentRequest.)
       (.setEnvironmentId   (.getEnvironmentId env))
       (.setEnvironmentName (.getEnvironmentName env))
-      (.setOptionSettings (env-var-options project env)))))
+      (.setOptionSettings (env-var-options project options)))))
 
 (defn update-environment-version [project env]
   (.updateEnvironment
@@ -174,17 +174,17 @@
        (let [value (poll)]
          (if (pred value) value (recur))))))
 
-(defn update-environment [project env]
-  (println (str "Updating '" (.getEnvironmentName env) "' environment")
+(defn update-environment [project env {name :name :as options}]
+  (println (str "Updating '" name "' environment")
            "(this may take several minutes)")
-  (update-environment-settings project env)
-  (poll-until ready? #(get-env project (.getEnvironmentName env)))
+  (update-environment-settings project env options)
+  (poll-until ready? #(get-env project name))
   (update-environment-version project env))
 
 (defn deploy-environment
   [project {name :name :as options}]
   (if-let [env (get-running-env project name)]
-    (update-environment project env)
+    (update-environment project env options)
     (create-environment project options))
   (let [env (poll-until ready? #(get-env project name))]
     (println " Done")
