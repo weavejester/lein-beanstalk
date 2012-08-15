@@ -29,7 +29,14 @@ Then add a `lein-beanstalk-credentials` definition to your
     (def lein-beanstalk-credentials
       {:access-key "XXXXXXXXXXXXXXXXXX"
        :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
-       
+
+Or, if you're using Leiningen 2, you can add the credentials to your
+`~/.lein/profile.clj` file:
+
+    {:user
+     {:aws {:access-key "XXXXXXXXXXXXXXXXXX"
+            :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}}}
+
 Finally, lein-beanstalk uses lein-ring for packaging your
 application, so all of lein-ring's configuration applies as well.
 At a minimum, you'll need to your `project.clj` a reference to
