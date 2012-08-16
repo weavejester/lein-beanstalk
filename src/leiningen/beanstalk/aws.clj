@@ -36,10 +36,12 @@
     ((juxt :access-key :secret-key) (or creds (:aws project)))))
 
 (defn credentials [project]
-  (let [[username pass] (find-credentials project)]
-    (if username
-      (BasicAWSCredentials. username pass)
-      (throw (IllegalStateException. (str "No credentials found; please add to ~/.lein/init.clj: " credentials-example))))))
+  (let [[access-key secret-key] (find-credentials project)]
+    (if access-key
+      (BasicAWSCredentials. access-key secret-key)
+      (throw (IllegalStateException.
+              (str "No credentials found; please add to ~/.lein/init.clj: "
+                   credentials-example))))))
 
 (defonce current-timestamp
   (.format (SimpleDateFormat. "yyyyMMddHHmmss") (Date.)))
@@ -51,16 +53,35 @@
   (or (-> project :aws :beanstalk :s3-bucket)
       (str "lein-beanstalk." (:name project))))
 
+(def s3-endpoints
+  {:us-east-1      "s3.amazonaws.com"
+   :ap-northeast-1 "s3-ap-northeast-1.amazonaws.com"
+   :eu-west-1      "s3-eu-west-1.amazonaws.com"
+   :us-west-1      "s3-us-west-1.amazonaws.com"
+   :us-west-2      "s3-us-west-2.amazonaws.com"})
+
+(def beanstalk-endpoints
+  {:us-east-1      "elasticbeanstalk.us-east-1.amazonaws.com"
+   :ap-northeast-1 "elasticbeanstalk.ap-northeast-1.amazonaws.com"
+   :eu-west-1      "elasticbeanstalk.eu-west-1.amazonaws.com"
+   :us-west-1      "elasticbeanstalk.us-west-1.amazonaws.com"
+   :us-west-2      "elasticbeanstalk.us-west-2.amazonaws.com"})
+
+(defn project-endpoint [project endpoints]
+  (-> project :aws (:region :us-east-1) keyword endpoints))
+
 (defn s3-upload-file [project filepath]
   (let [bucket (s3-bucket-name project)
         file   (io/file filepath)]
     (doto (AmazonS3Client. (credentials project))
+      (.setEndpoint (project-endpoint project s3-endpoints))
       (.createBucket bucket)
       (.putObject bucket (.getName file) file))
     (println "Uploaded" (.getName file) "to S3 Bucket")))
 
 (defn- beanstalk-client [project]
-  (AWSElasticBeanstalkClient. (credentials project)))
+  (doto (AWSElasticBeanstalkClient. (credentials project))
+    (.setEndpoint (project-endpoint project beanstalk-endpoints))))
 
 (defn create-app-version
   [project filename]
