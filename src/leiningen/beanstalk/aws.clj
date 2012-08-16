@@ -70,12 +70,16 @@
 (defn project-endpoint [project endpoints]
   (-> project :aws (:region :us-east-1) keyword endpoints))
 
+(defn create-bucket [client bucket]
+  (when-not (.doesBucketExist client bucket)
+    (.createBucket client bucket)))
+
 (defn s3-upload-file [project filepath]
   (let [bucket (s3-bucket-name project)
         file   (io/file filepath)]
     (doto (AmazonS3Client. (credentials project))
       (.setEndpoint (project-endpoint project s3-endpoints))
-      (.createBucket bucket)
+      (create-bucket bucket)
       (.putObject bucket (.getName file) file))
     (println "Uploaded" (.getName file) "to S3 Bucket")))
 
