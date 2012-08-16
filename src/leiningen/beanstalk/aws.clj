@@ -46,12 +46,16 @@
 (defonce current-timestamp
   (.format (SimpleDateFormat. "yyyyMMddHHmmss") (Date.)))
 
+(defn app-name [project]
+  (or (-> project :aws :beanstalk :app-name)
+      (:name project)))
+
 (defn app-version [project]
   (str (:version project) "-" current-timestamp))
 
 (defn s3-bucket-name [project]
   (or (-> project :aws :beanstalk :s3-bucket)
-      (str "lein-beanstalk." (:name project))))
+      (str "lein-beanstalk." (app-name project))))
 
 (def s3-endpoints
   {:us-east-1      "s3.amazonaws.com"
@@ -93,7 +97,7 @@
     (beanstalk-client project)
     (doto (CreateApplicationVersionRequest.)
       (.setAutoCreateApplication true)
-      (.setApplicationName (:name project))
+      (.setApplicationName (app-name project))
       (.setVersionLabel (app-version project))
       (.setDescription (:description project))
       (.setSourceBundle (S3Location. (s3-bucket-name project) filename))))
@@ -104,7 +108,7 @@
   (.deleteApplicationVersion
     (beanstalk-client project)
     (doto (DeleteApplicationVersionRequest.)
-      (.setApplicationName (:name project))
+      (.setApplicationName (app-name project))
       (.setVersionLabel version)
       (.setDeleteSourceBundle true))))
 
@@ -117,7 +121,7 @@
   (->> (beanstalk-client project)
        .describeApplications
        .getApplications
-       (find-one #(= (.getApplicationName %) (:name project)))))
+       (find-one #(= (.getApplicationName %) (app-name project)))))
 
 (defn default-env-vars
   "A map of default environment variables."
@@ -142,7 +146,7 @@
   (.createEnvironment
     (beanstalk-client project)
     (doto (CreateEnvironmentRequest.)
-      (.setApplicationName (:name project))
+      (.setApplicationName (app-name project))
       (.setEnvironmentName (:name env))
       (.setVersionLabel   (app-version project))
       (.setOptionSettings (env-var-options project env))
@@ -170,7 +174,7 @@
   (->> (beanstalk-client project)
       .describeEnvironments
       .getEnvironments
-      (filter #(= (.getApplicationName %) (:name project)))))
+      (filter #(= (.getApplicationName %) (app-name project)))))
 
 (defn ready? [environment]
   (= (.getStatus environment) "Ready"))
