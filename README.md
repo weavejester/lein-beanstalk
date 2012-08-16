@@ -210,6 +210,21 @@ To use a custom bucket, specify it in the `project.clj` file:
     :aws {:beanstalk {:s3-bucket "my-private-bucket"
                       ...}}
 
+### Regions
+
+You can specify the AWS region of to deploy the application to through
+your `project.clj` file:
+
+    :aws {:beanstalk {:region "eu-west-1"}}
+
+The following regions are recognized:
+
+* `us-east-1` (default)
+* `ap-northeast-1`
+* `eu-west-1`
+* `us-west-1`
+* `us-west-2`
+
 
 ## Trouble-Shooting
 
