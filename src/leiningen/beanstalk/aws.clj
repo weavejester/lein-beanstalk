@@ -72,7 +72,7 @@
    :us-west-2      "elasticbeanstalk.us-west-2.amazonaws.com"})
 
 (defn project-endpoint [project endpoints]
-  (-> project :aws (:region :us-east-1) keyword endpoints))
+  (-> project :aws :beanstalk (:region :us-east-1) keyword endpoints))
 
 (defn create-bucket [client bucket]
   (when-not (.doesBucketExist client bucket)
