@@ -252,6 +252,20 @@ The [full list][4] of available stacks that you are likely to use:
 * 64bit Amazon Linux running Tomcat 7
 * 32bit Amazon Linux running Tomcat 6
 * 64bit Amazon Linux running Tomcat 6
+=======
+### Configuring instance type, autoscaling, VPC, SSH, AMI, SSL
+
+You can customize many [other settings][5] on a per beanstalk environment
+basis with an options key:
+
+    :aws
+    {:beanstalk
+     {:environments
+      [{:name "dev"
+        :options {"aws:autoscaling:asg" {"MinSize" "1" "MaxSize" "1"}
+                  "aws:autoscaling:launchconfiguration" {"InstanceType" "m1.medium"
+                                                         "EC2KeyName" "mykey"
+                                                         "ImageId" "ami-cbab67a2"}}}]}}
 
 ### S3 Buckets
 
@@ -298,3 +312,4 @@ application. e.g. for Compojure add
 [2]: http://aws.amazon.com
 [3]: http://aws.amazon.com/s3
 [4]: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_ListAvailableSolutionStacks.html
+[5]: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html

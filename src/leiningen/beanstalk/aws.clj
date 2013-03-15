@@ -164,6 +164,13 @@
        key)
      value)))
 
+(defn extra-options
+  [options]
+  (apply concat
+         (for [[namespace keyvals] options]
+           (for [[key value] keyvals]
+             (ConfigurationOptionSetting. namespace key value)))))
+
 (defn create-environment [project env]
   (println (str "Creating '" (:name env) "' environment")
            "(this may take several minutes)")
@@ -173,7 +180,8 @@
       (.setApplicationName (app-name project))
       (.setEnvironmentName (:name env))
       (.setVersionLabel   (app-version project))
-      (.setOptionSettings (env-var-options project env))
+      (.setOptionSettings (concat (env-var-options project env)
+                                  (extra-options (:options env))))
       (.setCNAMEPrefix (:cname-prefix env))
       (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
                                  "32bit Amazon Linux running Tomcat 7")))))
