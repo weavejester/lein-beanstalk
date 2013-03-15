@@ -198,6 +198,20 @@ If the environment variable name is a keyword, it is upper-cased and
 underscores ("_") are substituted for dashes ("-"). e.g.
 `:database-url` becomes `"DATABASE_URL"`.
 
+### Choosing an alternate stack
+
+The default stack chosen is 32bit Amazon Linux running Tomcat 7. You
+can customize the stack used:
+
+    :aws {:beanstalk {:stack-name "64bit Amazon Linux running Tomcat 7"}}
+
+The [full list][4] of available stacks that you are likely to use:
+
+* 32bit Amazon Linux running Tomcat 7
+* 64bit Amazon Linux running Tomcat 7
+* 32bit Amazon Linux running Tomcat 6
+* 64bit Amazon Linux running Tomcat 6
+
 ### S3 Buckets
 
 [Amazon Elastic Beanstalk][1] uses
@@ -240,3 +254,4 @@ application. e.g. for Compojure add
 [1]: http://aws.amazon.com/elasticbeanstalk
 [2]: http://aws.amazon.com
 [3]: http://aws.amazon.com/s3
+[4]: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_ListAvailableSolutionStacks.html
