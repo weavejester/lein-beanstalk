@@ -198,6 +198,8 @@ If the environment variable name is a keyword, it is upper-cased and
 underscores ("_") are substituted for dashes ("-"). e.g.
 `:database-url` becomes `"DATABASE_URL"`.
 
+Note that they will only be visible through System/getProperty and *NOT* System/getenv.
+
 ### S3 Buckets
 
 [Amazon Elastic Beanstalk][1] uses
