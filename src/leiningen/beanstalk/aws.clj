@@ -7,6 +7,7 @@
     java.text.SimpleDateFormat
     java.util.Date
     [java.util.logging Logger Level]
+    com.amazonaws.ClientConfiguration
     com.amazonaws.auth.BasicAWSCredentials
     com.amazonaws.services.elasticbeanstalk.AWSElasticBeanstalkClient
     com.amazonaws.services.elasticbeanstalk.model.ConfigurationOptionSetting
@@ -78,17 +79,24 @@
   (when-not (.doesBucketExist client bucket)
     (.createBucket client bucket)))
 
+(defn- client-configuration [project]
+  "Create an instance of ClientConfiguration with the proxies set, if available"
+  (let [client-config (ClientConfiguration.)]
+    (when (-> project :aws :beanstalk :proxy-host) (.setProxyHost client-config (-> project :aws :beanstalk :proxy-host)))
+    (when (-> project :aws :beanstalk :proxy-port) (.setProxyPort client-config (-> project :aws :beanstalk :proxy-port)))
+    client-config))
+
 (defn s3-upload-file [project filepath]
   (let [bucket (s3-bucket-name project)
         file   (io/file filepath)]
-    (doto (AmazonS3Client. (credentials project))
+    (doto (AmazonS3Client. (credentials project) (client-configuration project))
       (.setEndpoint (project-endpoint project s3-endpoints))
       (create-bucket bucket)
       (.putObject bucket (.getName file) file))
     (println "Uploaded" (.getName file) "to S3 Bucket")))
 
 (defn- beanstalk-client [project]
-  (doto (AWSElasticBeanstalkClient. (credentials project))
+  (doto (AWSElasticBeanstalkClient. (credentials project) (client-configuration project))
     (.setEndpoint (project-endpoint project beanstalk-endpoints))))
 
 (defn create-app-version

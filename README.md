@@ -231,6 +231,14 @@ The following regions are recognized:
 * `us-west-1`
 * `us-west-2`
 
+### Proxy
+
+You can specify the proxy server to use for deployment
+your `project.clj` file:
+```clojure
+:aws {:beanstalk {:proxy-host "proxy.host"
+                  :proxy-port 1080}}
+```
 
 ## Trouble-Shooting
 
