@@ -148,6 +148,15 @@
        key)
      value)))
 
+(defn vpc-options [project options]
+  (for [[key value] (:vpc options)]
+    (ConfigurationOptionSetting.
+     "aws:ec2:vpc"
+     (if (keyword? key)
+       (-> key name str/upper-case (str/replace "-" "_"))
+       key)
+     value)))
+
 (defn create-environment [project env]
   (println (str "Creating '" (:name env) "' environment")
            "(this may take several minutes)")
@@ -157,7 +166,7 @@
       (.setApplicationName (app-name project))
       (.setEnvironmentName (:name env))
       (.setVersionLabel   (app-version project))
-      (.setOptionSettings (env-var-options project env))
+      (.setOptionSettings (into (env-var-options project env) (vpc-options project env)))
       (.setCNAMEPrefix (:cname-prefix env))
       (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
                                  "32bit Amazon Linux running Tomcat 7")))))
@@ -168,7 +177,7 @@
     (doto (UpdateEnvironmentRequest.)
       (.setEnvironmentId   (.getEnvironmentId env))
       (.setEnvironmentName (.getEnvironmentName env))
-      (.setOptionSettings (env-var-options project options)))))
+      (.setOptionSettings (into (env-var-options project env) (vpc-options project env))))))
 
 (defn update-environment-version [project env]
   (.updateEnvironment
