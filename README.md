@@ -152,14 +152,14 @@ To override the default behavior, add an `:aws` key to your
 `project.clj` file, either with `:environments` mapped to a
 vector of envionment symbols:
 ```clojure
-:aws {:beanstalk {:environments [dev demo prod]
+:aws {:beanstalk {:environments [development demo prod]
                   ...}
       ...}
 ```
 
 or to a vector of maps
 ```clojure
-:aws {:beanstalk {:environments [{:name "dev"}
+:aws {:beanstalk {:environments [{:name "development"}
                                  {:name "demo"}
                                  {:name "prod"}]
                   ...}
@@ -168,14 +168,14 @@ or to a vector of maps
 Given either of the above configurations, the following two
 environents will be created:
 
-* `dev` (with CNAME prefix `myapp-dev`)
+* `development` (with CNAME prefix `myapp-development`)
 * `demo` (with CNAME prefix `myapp-demo`)
 * `prod` (with CNAME prefix `myapp-prod`)
 
 The second option allows one to specify the CNAME prefix for each
 environment
 ```clojure
-:aws {:beanstalk {:environments [{:name "dev"
+:aws {:beanstalk {:environments [{:name "development"
                                   :cname-prefix "myapp-development"}
                                  {:name "staging"
                                   :cname-prefix "myapp-demo"}
@@ -194,8 +194,8 @@ properties of the running application, per beanstalk environment:
 :aws
 {:beanstalk
  {:environments
-  [{:name "dev"
-    :cname-prefix "myapp-dev"
+  [{:name "development"
+    :cname-prefix "myapp-development"
     :env {"DATABASE_URL" "mysql://..."}}]}}
 ```
 
