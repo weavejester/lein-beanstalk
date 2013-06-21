@@ -33,7 +33,7 @@ Then add a `lein-beanstalk-credentials` definition to your
 ```
 
 Or, if you're using Leiningen 2, you can add the credentials to your
-`~/.lein/profile.clj` file:
+`~/.lein/profiles.clj` file:
 ```clojure
 {:user
  {:aws {:access-key "XXXXXXXXXXXXXXXXXX"
