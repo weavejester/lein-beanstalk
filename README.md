@@ -180,7 +180,7 @@ environment
                                  {:name "staging"
                                   :cname-prefix "myapp-demo"}
                                  {:name "prod"
-                                  :canme-prefix "myapp"}]
+                                  :cname-prefix "myapp"}]
                   ...}
       ...}
 ```
