@@ -203,6 +203,20 @@ If the environment variable name is a keyword, it is upper-cased and
 underscores ("_") are substituted for dashes ("-"). e.g.
 `:database-url` becomes `"DATABASE_URL"`.
 
+### VPC options
+
+You can specify the VPC options of an environment.
+```clojure
+:aws
+{:beanstalk
+ {:environments
+  [{:name "dev"
+    :vpc {"VPCId" "vpc-43498"
+          "Subnets" "subnet-32c4595f"
+          "ELBSubnets" "subnet-35c4595d"
+          "DBSubnets" "subnet-38r4595f, subnet-4fdc9633, subnet-e9dc96554"}}]}}
+```
+
 ### S3 Buckets
 
 [Amazon Elastic Beanstalk][1] uses
@@ -231,6 +245,14 @@ The following regions are recognized:
 * `us-west-1`
 * `us-west-2`
 
+### Proxy
+
+You can specify the proxy server to use for deployment
+your `project.clj` file:
+```clojure
+:aws {:beanstalk {:proxy-host "proxy.host"
+                  :proxy-port 1080}}
+```
 
 ## Trouble-Shooting
 
