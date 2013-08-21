@@ -15,28 +15,30 @@ To use lein-beanstalk, you'll need to add a few additional values to
 your `project.clj` file.
 
 First, add lein-beanstalk as a plugin:
-
-    :plugins [[lein-beanstalk "0.2.6"]]
+```clojure
+:plugins [[lein-beanstalk "0.2.7"]]
+```
 
 or, if you're using a version of Leiningen prior to 1.7.0, add it to
 your `:dev-dependencies`:
-
-    :dev-dependencies [[lein-beanstalk "0.2.6"]]
-
+```clojure
+:dev-dependencies [[lein-beanstalk "0.2.7"]]
+```
 Then add a `lein-beanstalk-credentials` definition to your
 `~/.lein/init.clj` file that contains your AWS credentials:
-
-    (def lein-beanstalk-credentials
-      {:access-key "XXXXXXXXXXXXXXXXXX"
-       :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
+```clojure
+(def lein-beanstalk-credentials
+  {:access-key "XXXXXXXXXXXXXXXXXX"
+   :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
+```
 
 Or, if you're using Leiningen 2, you can add the credentials to your
-`~/.lein/profile.clj` file:
-
-    {:user
-     {:aws {:access-key "XXXXXXXXXXXXXXXXXX"
-            :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}}}
-
+`~/.lein/profiles.clj` file:
+```clojure
+{:user
+ {:aws {:access-key "XXXXXXXXXXXXXXXXXX"
+        :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"}}}
+```
 Finally, lein-beanstalk uses lein-ring for packaging your
 application, so all of lein-ring's configuration applies as well.
 At a minimum, you'll need to your `project.clj` a reference to
@@ -113,10 +115,11 @@ To remove any unused versions from the S3 bucket run
 The [Amazon Web Services][2] account key and secret key should be
 put into a `lein-beanstalk-credentials` definition in your
 `~/.lein/init.clj` file:
-
-    (def lein-beanstalk-credentials
-      {:access-key "XXXXXXXXXXXXXXXXXX"
-       :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
+```clojure
+(def lein-beanstalk-credentials
+  {:access-key "XXXXXXXXXXXXXXXXXX"
+   :secret-key "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"})
+```
 
 Keeping your credentials out of your `project.clj` file and out
 of your project in general helps ensure you don't accidentally
@@ -126,13 +129,13 @@ However, If you want to deploy your application using beanstalk from
 an environment like Jenkins, where you don't have control over the
 user, you can export the credential to the environment from the build
 script, and inside your `project.clj`, do:
-
-    (defproject my-project "0.1.0"
-        :description ...
-        :aws {
-            :access-key ~(System/getenv "AWS_ACCESS_KEY")
-            :secret-key ~(System/getenv "AWS_SECRET_KEY")})
-
+```clojure
+(defproject my-project "0.1.0"
+    :description ...
+    :aws {
+        :access-key ~(System/getenv "AWS_ACCESS_KEY")
+        :secret-key ~(System/getenv "AWS_SECRET_KEY")})
+```
 ### Environments
 
 Elastic Beanstalk environments can be defined in multiple ways in
@@ -148,19 +151,20 @@ default environments
 To override the default behavior, add an `:aws` key to your
 `project.clj` file, either with `:environments` mapped to a
 vector of envionment symbols:
-
-    :aws {:beanstalk {:environments [dev demo prod]
-                      ...}
-          ...}
+```clojure
+:aws {:beanstalk {:environments [dev demo prod]
+                  ...}
+      ...}
+```
 
 or to a vector of maps
-
-    :aws {:beanstalk {:environments [{:name "dev"}
-                                     {:name "demo"}
-                                     {:name "prod"}]
-                      ...}
-          ...}
-
+```clojure
+:aws {:beanstalk {:environments [{:name "dev"}
+                                 {:name "demo"}
+                                 {:name "prod"}]
+                  ...}
+      ...}
+```
 Given either of the above configurations, the following two
 environents will be created:
 
@@ -170,29 +174,30 @@ environents will be created:
 
 The second option allows one to specify the CNAME prefix for each
 environment
-
-    :aws {:beanstalk {:environments [{:name "dev"
-                                      :cname-prefix "myapp-development"}
-                                     {:name "staging"
-                                      :cname-prefix "myapp-demo"}
-                                     {:name "prod"
-                                      :canme-prefix "myapp"}]
-                      ...}
-          ...}
-
+```clojure
+:aws {:beanstalk {:environments [{:name "dev"
+                                  :cname-prefix "myapp-development"}
+                                 {:name "staging"
+                                  :cname-prefix "myapp-demo"}
+                                 {:name "prod"
+                                  :cname-prefix "myapp"}]
+                  ...}
+      ...}
+```
 By default the CNAME prefix is `<project-name>-<environment>`.
 
 ### Environment Variables
 
 You can specify environment variables that will be added to the system
 properties of the running application, per beanstalk environment:
-
-    :aws
-    {:beanstalk
-     {:environments
-      [{:name "dev"
-        :cname-prefix "myapp-dev"
-        :env {"DATABASE_URL" "mysql://..."}}]}}
+```clojure
+:aws
+{:beanstalk
+ {:environments
+  [{:name "dev"
+    :cname-prefix "myapp-dev"
+    :env {"DATABASE_URL" "mysql://..."}}]}}
+```
 
 If the environment variable name is a keyword, it is upper-cased and
 underscores ("_") are substituted for dashes ("-"). e.g.
@@ -206,16 +211,17 @@ of the application. By default lein-beanstalk uses
 `lein-beanstalk.<project-name>` as the S3 bucket name.
 
 To use a custom bucket, specify it in the `project.clj` file:
-
-    :aws {:beanstalk {:s3-bucket "my-private-bucket"
-                      ...}}
-
+```clojure
+:aws {:beanstalk {:s3-bucket "my-private-bucket"
+                  ...}}
+```
 ### Regions
 
 You can specify the AWS region of to deploy the application to through
 your `project.clj` file:
-
-    :aws {:beanstalk {:region "eu-west-1"}}
+```clojure
+:aws {:beanstalk {:region "eu-west-1"}}
+```
 
 The following regions are recognized:
 
@@ -234,8 +240,9 @@ Elastic Beanstalk console?
 A: Elastic Beanstalk sends a HTTP `HEAD` request to '/' to check if
 the application is running. Simply add the necessary handling to the
 application. e.g. for Compojure add
-
-    (HEAD "/" [] "")
+```clojure
+(HEAD "/" [] "")
+```
 
 [1]: http://aws.amazon.com/elasticbeanstalk
 [2]: http://aws.amazon.com
