@@ -4,3 +4,6 @@ pom.xml.asc
 lib
 classes
 /target
+.iml
+.idea/
+*.iml
