@@ -8,3 +8,4 @@ classes
 .idea/
 *.iml
 .lein*
+create-jar.sh

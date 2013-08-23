@@ -1,6 +1,8 @@
-# lein-beanstalk
+# lein-elastic-beanstalk
 
 Leiningen plugin for Amazon's [Elastic Beanstalk][1].
+
+This is an updated version of @weavejester's repo.
 
 ## Prerequisites
 
@@ -14,15 +16,15 @@ You will also need to be signed up for Elastic Beanstalk.
 To use lein-beanstalk, you'll need to add a few additional values to
 your `project.clj` file.
 
-First, add lein-beanstalk as a plugin:
+First, add lein-elastic-beanstalk as a plugin:
 ```clojure
-:plugins [[lein-beanstalk "0.2.7"]]
+:plugins [[lein-elastic-beanstalk "0.2.8-SNAPSHOT"]]
 ```
 
 or, if you're using a version of Leiningen prior to 1.7.0, add it to
 your `:dev-dependencies`:
 ```clojure
-:dev-dependencies [[lein-beanstalk "0.2.7"]]
+:dev-dependencies [[lein-elastic-beanstalk "0.2.8-SNAPSHOT"]]
 ```
 Then add a `lein-beanstalk-credentials` definition to your
 `~/.lein/init.clj` file that contains your AWS credentials:
@@ -309,6 +311,19 @@ application. e.g. for Compojure add
 ```clojure
 (HEAD "/" [] "")
 ```
+
+## Credit
+
+This plugin was originally written by [weavejester](https://github.com/weavejester).
+
+We've also incorporated some pull requests that we needed from contributors to that project:
+
+* [Allow users to supply a WAR file while deploying](https://github.com/weavejester/lein-beanstalk/pull/27) by unknown
+* [Note System/getProperty must be used to access environment variables](https://github.com/weavejester/lein-beanstalk/pull/29) by @osbert
+* [Document how to choose an alternate stack and the likely choices](https://github.com/weavejester/lein-beanstalk/pull/30) by @osbert
+* [Support passthrough of additional ConfigurationOptionSettings](https://github.com/weavejester/lein-beanstalk/pull/31) by @osbert
+
+We also welcome your contributions and will do our best to keep this repo updated.
 
 [1]: http://aws.amazon.com/elasticbeanstalk
 [2]: http://aws.amazon.com
