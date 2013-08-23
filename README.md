@@ -58,6 +58,13 @@ using the following command:
 
     $ lein beanstalk deploy development
 
+#### Custom WAR
+
+If you're so inclined, you can also deploy a custom WAR by passing the file
+to the deploy command.
+
+    $ lein beanstalk deploy development target/myproject.war
+
 ### Info
 
 To get information about the application itself run
@@ -185,6 +192,35 @@ environment
       ...}
 ```
 By default the CNAME prefix is `<project-name>-<environment>`.
+
+### Aliases
+
+If you deploy multiple services to Elastic Beanstalk, you'll realize
+that environment names must be unique across all of your applications.
+Aliases allow you to refer to a standard name across your projects,
+while deploying to an environment named suing either the defaults or
+what is supplied for `:name`.
+
+
+Below are the defaults.
+```clojure
+:aws {:beanstalk {:environments [{:alias "development"
+                                  :name "myproject-dev"}
+                                 {:alias "staging"
+                                  :name "myproject-staging"}
+                                 {:alias "production"
+                                  :name "myproject"}]
+                  ...}
+      ...}
+```
+
+You may refer to either the alias or the name when running lein-beanstalk
+commands.
+
+    $ lein beanstalk deploy development
+    $ lein beanstalk deploy myproject-dev
+
+Both of the above commands deploy to `myproject-dev.elasticbeanstalk.com`
 
 ### Environment Variables
 
