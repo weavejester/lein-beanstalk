@@ -156,6 +156,7 @@
 
 (defn env-var-options [project options]
   (for [[key value] (merge (default-env-vars project)
+                           (-> project :aws :beanstalk :env)
                            (:env options))]
     (ConfigurationOptionSetting.
      "aws:elasticbeanstalk:application:environment"
@@ -181,7 +182,8 @@
       (.setEnvironmentName (:name env))
       (.setVersionLabel   (app-version project))
       (.setOptionSettings (concat (env-var-options project env)
-                                  (extra-options (:options env))))
+                                  (extra-options (merge (-> project :aws :beanstalk :options)
+                                                        (:options env)))))
       (.setCNAMEPrefix (:cname-prefix env))
       (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
                                  "32bit Amazon Linux running Tomcat 7")))))
