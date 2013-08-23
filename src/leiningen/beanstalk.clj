@@ -17,7 +17,8 @@
   [project]
   (for [env (-> project :aws :beanstalk :environments)]
     (if (map? env)
-      (merge {:cname-prefix (str (:name project) "-" (or (:alias env) (:name env)))} env)
+      (merge {:cname-prefix (str (:name project) "-" (or (:alias env) (:name env)))}
+        (merge {:name (or (:name env) (str (:name project) "-" (:alias env)))} env))
       {:name env, :cname-prefix (str (:name project) "-" env)})))
 
 (defn get-project-env [project env-name]
