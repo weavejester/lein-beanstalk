@@ -17,7 +17,7 @@
   [project]
   (for [env (-> project :aws :beanstalk :environments)]
     (if (map? env)
-      (merge {:cname-prefix (str (:name project) "-" (:name env))} env)
+      (merge {:cname-prefix (str (:name project) "-" (or (:alias env) (:name env)))} env)
       {:name env, :cname-prefix (str (:name project) "-" env)})))
 
 (defn get-project-env [project env-name]
@@ -57,9 +57,10 @@
   ([project]
      (println "Usage: lein beanstalk terminate <environment>"))
   ([project env-name]
-     (if-not (get-project-env project env-name)
-       (println (str "Environment '" env-name "' not in project.clj"))
-       (aws/terminate-environment project env-name))))
+     (let [name (:name (get-project-env project env-name))]
+       (if-not name
+         (println (str "Environment '" name "' not in project.clj"))
+         (aws/terminate-environment project name)))))
 
 (def app-info-indent "\n                  ")
 
