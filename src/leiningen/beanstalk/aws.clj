@@ -18,7 +18,8 @@
     com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.S3Location
     com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
-    com.amazonaws.services.s3.AmazonS3Client))
+    com.amazonaws.services.s3.AmazonS3Client
+    com.amazonaws.services.s3.model.Region))
 
 (defn quiet-logger
   "Stop the extremely verbose AWS logger from logging so many messages."
@@ -51,41 +52,64 @@
       (:name project)))
 
 (defn app-version [project]
-  (str (:version project) "-" current-timestamp))
+  (if (nil? (:version project))
+    (str current-timestamp)
+    (str (:version project) "-" current-timestamp)))
+
 
 (defn s3-bucket-name [project]
   (or (-> project :aws :beanstalk :s3-bucket)
       (str "lein-beanstalk." (app-name project))))
 
+(defn- ep [endpoint region_name]
+  {:ep endpoint :region (Region/valueOf region_name)})
+
 (def s3-endpoints
-  {:us-east-1      "s3.amazonaws.com"
-   :ap-northeast-1 "s3-ap-northeast-1.amazonaws.com"
-   :eu-west-1      "s3-eu-west-1.amazonaws.com"
-   :us-west-1      "s3-us-west-1.amazonaws.com"
-   :us-west-2      "s3-us-west-2.amazonaws.com"})
+  {:us-east-1      (ep "s3.amazonaws.com" "US_Standard")
+   :us-west-1      (ep "s3-us-west-1.amazonaws.com" "US_West")
+   :us-west-2      (ep "s3-us-west-2.amazonaws.com" "US_West_2")
+   :eu-west-1      (ep "s3-eu-west-1.amazonaws.com" "EU_Ireland")
+   :ap-southeast-1 (ep "s3-ap-southeast-1.amazonaws.com" "AP_Singapore")
+   :ap-southeast-2 (ep "s3-ap-southeast-2.amazonaws.com" "AP_Sydney")
+   :ap-northeast-1 (ep "s3-ap-northeast-1.amazonaws.com" "AP_Tokyo")
+   :sa-east-1      (ep "s3-sa-east-1.amazonaws.com" "SA_SaoPaulo")})
 
 (def beanstalk-endpoints
   {:us-east-1      "elasticbeanstalk.us-east-1.amazonaws.com"
-   :ap-northeast-1 "elasticbeanstalk.ap-northeast-1.amazonaws.com"
-   :eu-west-1      "elasticbeanstalk.eu-west-1.amazonaws.com"
    :us-west-1      "elasticbeanstalk.us-west-1.amazonaws.com"
-   :us-west-2      "elasticbeanstalk.us-west-2.amazonaws.com"})
+   :us-west-2      "elasticbeanstalk.us-west-2.amazonaws.com"
+   :eu-west-1      "elasticbeanstalk.eu-west-1.amazonaws.com"
+   :ap-southeast-1 "elasticbeanstalk.ap-southeast-1.amazonaws.com"
+   :ap-southeast-2 "elasticbeanstalk.ap-southeast-2.amazonaws.com"
+   :ap-northeast-1 "elasticbeanstalk.ap-northeast-1.amazonaws.com"
+   :sa-east-1      "elasticbeanstalk.sa-east-1.amazonaws.com"})
 
 (defn project-endpoint [project endpoints]
   (-> project :aws :beanstalk (:region :us-east-1) keyword endpoints))
 
-(defn create-bucket [client bucket]
+(defn create-bucket [client bucket region]
   (when-not (.doesBucketExist client bucket)
-    (.createBucket client bucket)))
+    (.createBucket client bucket region)))
 
-(defn s3-upload-file [project filepath]
-  (let [bucket (s3-bucket-name project)
-        file   (io/file filepath)]
-    (doto (AmazonS3Client. (credentials project))
-      (.setEndpoint (project-endpoint project s3-endpoints))
-      (create-bucket bucket)
-      (.putObject bucket (.getName file) file))
-    (println "Uploaded" (.getName file) "to S3 Bucket")))
+(defn s3-upload-file
+  ([project filepath]
+    (let [bucket  (s3-bucket-name project)
+          file    (io/file filepath)
+          ep-desc (project-endpoint project s3-endpoints)]
+      (doto (AmazonS3Client. (credentials project))
+        (.setEndpoint (:ep ep-desc))
+        (create-bucket bucket (:region ep-desc))
+        (.putObject bucket (.getName file) file))
+      (println "Uploaded" (.getName file) "to S3 Bucket")))
+  ([project filepath filename]
+    (let [bucket  (s3-bucket-name project)
+          file    (io/file filepath)
+          ep-desc (project-endpoint project s3-endpoints)]
+      (doto (AmazonS3Client. (credentials project))
+        (.setEndpoint (:ep ep-desc))
+        (create-bucket bucket (:region ep-desc))
+        (.putObject bucket filename file))
+      (println "Uploaded" filename "to S3 Bucket"))))
 
 (defn- beanstalk-client [project]
   (doto (AWSElasticBeanstalkClient. (credentials project))
