@@ -52,7 +52,10 @@
       (:name project)))
 
 (defn app-version [project]
-  (str (:version project) "-" current-timestamp))
+  (if (nil? (:version project))
+    (str current-timestamp)
+    (str (:version project) "-" current-timestamp)))
+
 
 (defn s3-bucket-name [project]
   (or (-> project :aws :beanstalk :s3-bucket)
@@ -88,15 +91,25 @@
   (when-not (.doesBucketExist client bucket)
     (.createBucket client bucket region)))
 
-(defn s3-upload-file [project filepath]
-  (let [bucket  (s3-bucket-name project)
-        file    (io/file filepath)
-        ep-desc (project-endpoint project s3-endpoints)]
-    (doto (AmazonS3Client. (credentials project))
-      (.setEndpoint (:ep ep-desc))
-      (create-bucket bucket (:region ep-desc))
-      (.putObject bucket (.getName file) file))
-    (println "Uploaded" (.getName file) "to S3 Bucket")))
+(defn s3-upload-file
+  ([project filepath]
+    (let [bucket  (s3-bucket-name project)
+          file    (io/file filepath)
+          ep-desc (project-endpoint project s3-endpoints)]
+      (doto (AmazonS3Client. (credentials project))
+        (.setEndpoint (:ep ep-desc))
+        (create-bucket bucket (:region ep-desc))
+        (.putObject bucket (.getName file) file))
+      (println "Uploaded" (.getName file) "to S3 Bucket")))
+  ([project filepath filename]
+    (let [bucket  (s3-bucket-name project)
+          file    (io/file filepath)
+          ep-desc (project-endpoint project s3-endpoints)]
+      (doto (AmazonS3Client. (credentials project))
+        (.setEndpoint (:ep ep-desc))
+        (create-bucket bucket (:region ep-desc))
+        (.putObject bucket filename file))
+      (println "Uploaded" filename "to S3 Bucket"))))
 
 (defn- beanstalk-client [project]
   (doto (AWSElasticBeanstalkClient. (credentials project))
