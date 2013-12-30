@@ -18,6 +18,7 @@
     com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.S3Location
     com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
+    com.amazonaws.services.elasticbeanstalk.model.EnvironmentTier
     com.amazonaws.services.s3.AmazonS3Client
     com.amazonaws.services.s3.model.Region))
 
@@ -50,6 +51,15 @@
 (defn app-name [project]
   (or (-> project :aws :beanstalk :app-name)
       (:name project)))
+
+(defn app-tier [project]
+  (doto (EnvironmentTier.)
+    (.setName (or (-> project :aws :beanstalk :app-tier :name)
+                  "WebServer"))
+    (.setType (or (-> project :aws :beanstalk :app-tier :type)
+                  "Standard"))
+    (.setVersion (or (-> project :aws :beanstalk :app-tier :version)
+                     "1.0"))))
 
 (defn app-version [project]
   (if (nil? (:version project))
@@ -177,16 +187,20 @@
            "(this may take several minutes)")
   (.createEnvironment
     (beanstalk-client project)
-    (doto (CreateEnvironmentRequest.)
-      (.setApplicationName (app-name project))
-      (.setEnvironmentName (:name env))
-      (.setVersionLabel   (app-version project))
-      (.setOptionSettings (concat (env-var-options project env)
-                                  (extra-options (merge (-> project :aws :beanstalk :options)
-                                                        (:options env)))))
-      (.setCNAMEPrefix (:cname-prefix env))
-      (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
-                                 "32bit Amazon Linux running Tomcat 7")))))
+    (let [request (CreateEnvironmentRequest.)]
+      (doto request
+        (.setApplicationName (app-name project))
+        (.setEnvironmentName (:name env))
+        (.setTier (app-tier project))
+        (.setVersionLabel   (app-version project))
+        (.setOptionSettings (concat (env-var-options project env)
+                                    (extra-options (merge (-> project :aws :beanstalk :options)
+                                                          (:options env)))))
+        (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
+                                   "32bit Amazon Linux running Tomcat 7")))
+      (if (= (.getName (.getTier request)) "WebServer")
+        (.setCNAMEPrefix request (:cname-prefix env)))
+      request)))
 
 (defn update-environment-settings [project env options]
   (.updateEnvironment

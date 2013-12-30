@@ -271,6 +271,16 @@ basis with an options key:
                                                          "EC2KeyName" "mykey"
                                                          "ImageId" "ami-cbab67a2"}}}]}}
 
+### Configuring the application tier ###
+
+Amazon recently added support for [worker tiers][6], which are useful for running background tasks.
+The default stack is built for a web application. To deploy as a worker, supply the following options
+for the `:app-tier` key.
+
+    :aws
+    {:beanstalk
+     {:app-tier {:name "Worker" :type "SQS/HTTP" :version "1.0"}}}
+
 ### S3 Buckets
 
 [Amazon Elastic Beanstalk][1] uses
@@ -330,3 +340,4 @@ We also welcome your contributions and will do our best to keep this repo update
 [3]: http://aws.amazon.com/s3
 [4]: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_ListAvailableSolutionStacks.html
 [5]: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html
+[6]: http://aws.typepad.com/aws/2013/12/background-task-handling-for-aws-elastic-beanstalk.html
