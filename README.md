@@ -203,6 +203,20 @@ If the environment variable name is a keyword, it is upper-cased and
 underscores ("_") are substituted for dashes ("-"). e.g.
 `:database-url` becomes `"DATABASE_URL"`.
 
+### Configuring instance type, autoscaling, VPC, SSH, AMI, SSL
+
+You can customize many [other settings][5] on a per beanstalk environment
+basis with an options key:
+
+    :aws
+    {:beanstalk
+     {:environments
+      [{:name "dev"
+        :options {"aws:autoscaling:asg" {"MinSize" "1" "MaxSize" "1"}
+                  "aws:autoscaling:launchconfiguration" {"InstanceType" "m1.medium"
+                                                         "EC2KeyName" "mykey"
+                                                         "ImageId" "ami-cbab67a2"}}}]}}
+
 ### S3 Buckets
 
 [Amazon Elastic Beanstalk][1] uses
@@ -247,3 +261,4 @@ application. e.g. for Compojure add
 [1]: http://aws.amazon.com/elasticbeanstalk
 [2]: http://aws.amazon.com
 [3]: http://aws.amazon.com/s3
+[5]: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html
