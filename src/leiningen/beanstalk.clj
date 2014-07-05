@@ -40,6 +40,13 @@
          (aws/s3-upload-file project path)
          (aws/create-app-version project filename)
          (aws/deploy-environment project env))
+       (println (str "Environment '" env-name "' not defined!"))))
+  ([project env-name war-file]
+     (let [filename (war-filename war-file)
+             path war-file]
+         (aws/s3-upload-file project path)
+         (aws/create-app-version project filename)
+         (aws/deploy-environment project env))
        (println (str "Environment '" env-name "' not defined!")))))
 
 (defn terminate
