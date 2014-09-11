@@ -34,12 +34,20 @@
   ([project]
      (println "Usage: lein beanstalk deploy <environment>"))
   ([project env-name]
+     (deploy project env-name false))
+  ([project env-name aws]
      (if-let [env (get-project-env project env-name)]
-       (let [filename (war-filename project)
-             path (uberwar project filename)]
-         (aws/s3-upload-file project path)
-         (aws/create-app-version project filename)
-         (aws/deploy-environment project env))
+        (if aws)
+         (let [filename (war-filename project)
+               path (awsuberwar project filename)]
+           (aws/s3-upload-file project path)
+           (aws/create-app-version project filename)
+           (aws/deploy-environment project env))
+         (let [filename (war-filename project)
+               path (uberwar project filename)]
+           (aws/s3-upload-file project path)
+           (aws/create-app-version project filename)
+           (aws/deploy-environment project env))
        (println (str "Environment '" env-name "' not defined!")))))
 
 (defn terminate
