@@ -1,6 +1,7 @@
 (ns leiningen.beanstalk
   (:require [leiningen.beanstalk.aws :as aws]
             [clojure.string :as str]
+            [robert.hooke]
             [clojure.set :as set])
   (:use [leiningen.help :only (help-for)]
         [leiningen.ring.war :only (war-file-path)]
@@ -29,6 +30,22 @@
 (defn war-filename [project]
   (str (:name project) "-" (aws/app-version project) ".war"))
 
+(defn skip-file? [original_func project war-path file]
+  (and (not (re-find #".ebextensions.*" war-path))
+       (original_func project war-path file)))
+
+(def hooked (atom 0))
+
+(defn awsuberwar
+  "Creates a valid Amazon web services WAR that
+   is deployable to servlet containers."
+  [project filename]
+  (if (= 0 @hooked)
+    (do
+      (robert.hooke/add-hook #'leiningen.ring.war/skip-file? #'skip-file?)
+      (swap! hooked inc)))
+  (uberwar project filename))
+
 (defn deploy
   "Deploy the current project to Amazon Elastic Beanstalk."
   ([project]
@@ -36,19 +53,20 @@
   ([project env-name]
      (deploy project env-name false))
   ([project env-name aws]
-     (if-let [env (get-project-env project env-name)]
-        (if aws)
-         (let [filename (war-filename project)
-               path (awsuberwar project filename)]
-           (aws/s3-upload-file project path)
-           (aws/create-app-version project filename)
-           (aws/deploy-environment project env))
-         (let [filename (war-filename project)
-               path (uberwar project filename)]
-           (aws/s3-upload-file project path)
-           (aws/create-app-version project filename)
-           (aws/deploy-environment project env))
-       (println (str "Environment '" env-name "' not defined!")))))
+     (let [env (get-project-env project env-name)]
+      (if env
+        (if aws
+          (let [filename (war-filename project)
+                path (awsuberwar project filename)]
+                (aws/s3-upload-file project path)
+                (aws/create-app-version project filename)
+                (aws/deploy-environment project env))
+          (let [filename (war-filename project)
+                path (uberwar project filename)]
+                (aws/s3-upload-file project path)
+                (aws/create-app-version project filename)
+                (aws/deploy-environment project env)))
+       (println (str "Environment '" env-name "' not defined!"))))))
 
 (defn terminate
   "Terminate the environment for the current project on Amazon Elastic Beanstalk."
@@ -135,3 +153,4 @@
        "info"      (apply info project args)
        "terminate" (apply terminate project args)
        (println (help-for "beanstalk")))))
+
