@@ -304,7 +304,7 @@ The following regions are recognized:
 * `eu-west-1`
 * `us-west-1`
 * `us-west-2`
-
+* `eu-central-1`
 
 ## Trouble-Shooting
 

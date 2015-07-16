@@ -78,6 +78,7 @@
   {:us-east-1      (ep "s3.amazonaws.com" "US_Standard")
    :us-west-1      (ep "s3-us-west-1.amazonaws.com" "US_West")
    :us-west-2      (ep "s3-us-west-2.amazonaws.com" "US_West_2")
+   :eu-central-1   (ep "s3-eu-central-1.amazonaws.com" "EU_Frankfurt")
    :eu-west-1      (ep "s3-eu-west-1.amazonaws.com" "EU_Ireland")
    :ap-southeast-1 (ep "s3-ap-southeast-1.amazonaws.com" "AP_Singapore")
    :ap-southeast-2 (ep "s3-ap-southeast-2.amazonaws.com" "AP_Sydney")
@@ -88,6 +89,7 @@
   {:us-east-1      "elasticbeanstalk.us-east-1.amazonaws.com"
    :us-west-1      "elasticbeanstalk.us-west-1.amazonaws.com"
    :us-west-2      "elasticbeanstalk.us-west-2.amazonaws.com"
+   :eu-central-1   "elasticbeanstalk.eu-central-1.amazonaws.com"
    :eu-west-1      "elasticbeanstalk.eu-west-1.amazonaws.com"
    :ap-southeast-1 "elasticbeanstalk.ap-southeast-1.amazonaws.com"
    :ap-southeast-2 "elasticbeanstalk.ap-southeast-2.amazonaws.com"
