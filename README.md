@@ -58,6 +58,13 @@ using the following command:
 
     $ lein beanstalk deploy development
 
+#### Custom WAR
+
+If you're so inclined, you can also deploy a custom WAR by passing the file
+to the deploy command.
+
+    $ lein beanstalk deploy development target/myproject.war
+
 ### Info
 
 To get information about the application itself run
@@ -186,6 +193,35 @@ environment
 ```
 By default the CNAME prefix is `<project-name>-<environment>`.
 
+### Aliases
+
+If you deploy multiple services to Elastic Beanstalk, you'll realize
+that environment names must be unique across all of your applications.
+Aliases allow you to refer to a standard name across your projects,
+while deploying to an environment named suing either the defaults or
+what is supplied for `:name`.
+
+
+Below are the defaults.
+```clojure
+:aws {:beanstalk {:environments [{:alias "development"
+                                  :name "myproject-dev"}
+                                 {:alias "staging"
+                                  :name "myproject-staging"}
+                                 {:alias "production"
+                                  :name "myproject"}]
+                  ...}
+      ...}
+```
+
+You may refer to either the alias or the name when running lein-beanstalk
+commands.
+
+    $ lein beanstalk deploy development
+    $ lein beanstalk deploy myproject-dev
+
+Both of the above commands deploy to `myproject-dev.elasticbeanstalk.com`
+
 ### Environment Variables
 
 You can specify environment variables that will be added to the system
@@ -202,6 +238,44 @@ properties of the running application, per beanstalk environment:
 If the environment variable name is a keyword, it is upper-cased and
 underscores ("_") are substituted for dashes ("-"). e.g.
 `:database-url` becomes `"DATABASE_URL"`.
+
+### Choosing an alternate stack
+
+The default stack chosen is 32bit Amazon Linux running Tomcat 7. You
+can customize the stack used:
+
+    :aws {:beanstalk {:stack-name "64bit Amazon Linux running Tomcat 7"}}
+
+The [full list][4] of available stacks that you are likely to use:
+
+* 32bit Amazon Linux running Tomcat 7
+* 64bit Amazon Linux running Tomcat 7
+* 32bit Amazon Linux running Tomcat 6
+* 64bit Amazon Linux running Tomcat 6
+=======
+### Configuring instance type, autoscaling, VPC, SSH, AMI, SSL
+
+You can customize many [other settings][5] on a per beanstalk environment
+basis with an options key:
+
+    :aws
+    {:beanstalk
+     {:environments
+      [{:name "dev"
+        :options {"aws:autoscaling:asg" {"MinSize" "1" "MaxSize" "1"}
+                  "aws:autoscaling:launchconfiguration" {"InstanceType" "m1.medium"
+                                                         "EC2KeyName" "mykey"
+                                                         "ImageId" "ami-cbab67a2"}}}]}}
+
+### Configuring the application tier ###
+
+Amazon recently added support for [worker tiers][6], which are useful for running background tasks.
+The default stack is built for a web application. To deploy as a worker, supply the following options
+for the `:app-tier` key.
+
+    :aws
+    {:beanstalk
+     {:app-tier {:name "Worker" :type "SQS/HTTP" :version "1.0"}}}
 
 ### S3 Buckets
 
@@ -230,7 +304,7 @@ The following regions are recognized:
 * `eu-west-1`
 * `us-west-1`
 * `us-west-2`
-
+* `eu-central-1`
 
 ## Trouble-Shooting
 
@@ -247,3 +321,6 @@ application. e.g. for Compojure add
 [1]: http://aws.amazon.com/elasticbeanstalk
 [2]: http://aws.amazon.com
 [3]: http://aws.amazon.com/s3
+[4]: http://docs.aws.amazon.com/elasticbeanstalk/latest/APIReference/API_ListAvailableSolutionStacks.html
+[5]: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html
+[6]: http://aws.typepad.com/aws/2013/12/background-task-handling-for-aws-elastic-beanstalk.html
