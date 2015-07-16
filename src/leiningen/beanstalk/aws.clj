@@ -18,6 +18,7 @@
     com.amazonaws.services.elasticbeanstalk.model.UpdateEnvironmentRequest
     com.amazonaws.services.elasticbeanstalk.model.S3Location
     com.amazonaws.services.elasticbeanstalk.model.TerminateEnvironmentRequest
+    com.amazonaws.services.elasticbeanstalk.model.EnvironmentTier
     com.amazonaws.services.s3.AmazonS3Client
     com.amazonaws.services.s3.model.Region))
 
@@ -51,8 +52,20 @@
   (or (-> project :aws :beanstalk :app-name)
       (:name project)))
 
+(defn app-tier [project]
+  (doto (EnvironmentTier.)
+    (.setName (or (-> project :aws :beanstalk :app-tier :name)
+                  "WebServer"))
+    (.setType (or (-> project :aws :beanstalk :app-tier :type)
+                  "Standard"))
+    (.setVersion (or (-> project :aws :beanstalk :app-tier :version)
+                     "1.0"))))
+
 (defn app-version [project]
-  (str (:version project) "-" current-timestamp))
+  (if (nil? (:version project))
+    (str current-timestamp)
+    (str (:version project) "-" current-timestamp)))
+
 
 (defn s3-bucket-name [project]
   (or (-> project :aws :beanstalk :s3-bucket)
@@ -65,6 +78,7 @@
   {:us-east-1      (ep "s3.amazonaws.com" "US_Standard")
    :us-west-1      (ep "s3-us-west-1.amazonaws.com" "US_West")
    :us-west-2      (ep "s3-us-west-2.amazonaws.com" "US_West_2")
+   :eu-central-1   (ep "s3-eu-central-1.amazonaws.com" "EU_Frankfurt")
    :eu-west-1      (ep "s3-eu-west-1.amazonaws.com" "EU_Ireland")
    :ap-southeast-1 (ep "s3-ap-southeast-1.amazonaws.com" "AP_Singapore")
    :ap-southeast-2 (ep "s3-ap-southeast-2.amazonaws.com" "AP_Sydney")
@@ -75,6 +89,7 @@
   {:us-east-1      "elasticbeanstalk.us-east-1.amazonaws.com"
    :us-west-1      "elasticbeanstalk.us-west-1.amazonaws.com"
    :us-west-2      "elasticbeanstalk.us-west-2.amazonaws.com"
+   :eu-central-1   "elasticbeanstalk.eu-central-1.amazonaws.com"
    :eu-west-1      "elasticbeanstalk.eu-west-1.amazonaws.com"
    :ap-southeast-1 "elasticbeanstalk.ap-southeast-1.amazonaws.com"
    :ap-southeast-2 "elasticbeanstalk.ap-southeast-2.amazonaws.com"
@@ -88,15 +103,25 @@
   (when-not (.doesBucketExist client bucket)
     (.createBucket client bucket region)))
 
-(defn s3-upload-file [project filepath]
-  (let [bucket  (s3-bucket-name project)
-        file    (io/file filepath)
-        ep-desc (project-endpoint project s3-endpoints)]
-    (doto (AmazonS3Client. (credentials project))
-      (.setEndpoint (:ep ep-desc))
-      (create-bucket bucket (:region ep-desc))
-      (.putObject bucket (.getName file) file))
-    (println "Uploaded" (.getName file) "to S3 Bucket")))
+(defn s3-upload-file
+  ([project filepath]
+    (let [bucket  (s3-bucket-name project)
+          file    (io/file filepath)
+          ep-desc (project-endpoint project s3-endpoints)]
+      (doto (AmazonS3Client. (credentials project))
+        (.setEndpoint (:ep ep-desc))
+        (create-bucket bucket (:region ep-desc))
+        (.putObject bucket (.getName file) file))
+      (println "Uploaded" (.getName file) "to S3 Bucket")))
+  ([project filepath filename]
+    (let [bucket  (s3-bucket-name project)
+          file    (io/file filepath)
+          ep-desc (project-endpoint project s3-endpoints)]
+      (doto (AmazonS3Client. (credentials project))
+        (.setEndpoint (:ep ep-desc))
+        (create-bucket bucket (:region ep-desc))
+        (.putObject bucket filename file))
+      (println "Uploaded" filename "to S3 Bucket"))))
 
 (defn- beanstalk-client [project]
   (doto (AWSElasticBeanstalkClient. (credentials project))
@@ -143,6 +168,7 @@
 
 (defn env-var-options [project options]
   (for [[key value] (merge (default-env-vars project)
+                           (-> project :aws :beanstalk :env)
                            (:env options))]
     (ConfigurationOptionSetting.
      "aws:elasticbeanstalk:application:environment"
@@ -151,19 +177,32 @@
        key)
      value)))
 
+(defn extra-options
+  [options]
+  (apply concat
+         (for [[namespace keyvals] options]
+           (for [[key value] keyvals]
+             (ConfigurationOptionSetting. namespace key value)))))
+
 (defn create-environment [project env]
   (println (str "Creating '" (:name env) "' environment")
            "(this may take several minutes)")
   (.createEnvironment
     (beanstalk-client project)
-    (doto (CreateEnvironmentRequest.)
-      (.setApplicationName (app-name project))
-      (.setEnvironmentName (:name env))
-      (.setVersionLabel   (app-version project))
-      (.setOptionSettings (env-var-options project env))
-      (.setCNAMEPrefix (:cname-prefix env))
-      (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
-                                 "32bit Amazon Linux running Tomcat 7")))))
+    (let [request (CreateEnvironmentRequest.)]
+      (doto request
+        (.setApplicationName (app-name project))
+        (.setEnvironmentName (:name env))
+        (.setTier (app-tier project))
+        (.setVersionLabel   (app-version project))
+        (.setOptionSettings (concat (env-var-options project env)
+                                    (extra-options (merge (-> project :aws :beanstalk :options)
+                                                          (:options env)))))
+        (.setSolutionStackName (or (-> project :aws :beanstalk :stack-name)
+                                   "32bit Amazon Linux running Tomcat 7")))
+      (if (= (.getName (.getTier request)) "WebServer")
+        (.setCNAMEPrefix request (:cname-prefix env)))
+      request)))
 
 (defn update-environment-settings [project env options]
   (.updateEnvironment
