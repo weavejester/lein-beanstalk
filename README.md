@@ -215,6 +215,17 @@ To use a custom bucket, specify it in the `project.clj` file:
 :aws {:beanstalk {:s3-bucket "my-private-bucket"
                   ...}}
 ```
+
+### Application Name
+
+By default lein-beanstalk uses the name of your project defined in your project.clj file (e.g., `(defproject my-app "1.0.0" ...`) as the Elastic Beanstalk application name.
+
+To override this default, specify an `:app-name` in the `project.clj` file:
+```clojure
+:aws {:beanstalk {:app-name "my-application"
+                  ...}}
+```
+
 ### Regions
 
 You can specify the AWS region of to deploy the application to through
